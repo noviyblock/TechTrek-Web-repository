@@ -29,3 +29,4 @@ Thumbs.db
 # Игнорируем локальные конфигурации
 **/application-local.properties
 **/local.env
+.env

@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table-theme
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: theme
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: false
+                    nullable: false
+  - changeSet:
+      id: create-table-game
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: game
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: difficulty
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: theme_id
+                  type: bigserial
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_game_theme
+                    references: theme(id)
+
+  - changeSet:
+      id: create-table-user
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: user
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: game_id
+                  type: bigserial
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_game
+                    references: game(id)

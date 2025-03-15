@@ -4,21 +4,21 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "game")
+@Table(name = "registered_user")
 @Data
-public class Game {
+public class RegisteredUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String teamName;
+    @Column(nullable = false, unique = true)
+    private String username;
 
     @Column(nullable = false)
-    private Double difficulty;
+    private String password;
 
-    @ManyToOne
-    private Theme theme;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     //TODO override method toString
 }

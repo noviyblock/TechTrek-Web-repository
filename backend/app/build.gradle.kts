@@ -6,7 +6,7 @@ plugins {
 
 group = "com.startupgame"
 version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
@@ -16,6 +16,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+    implementation("org.springframework.boot:spring-boot-starter-validation:3.4.3")
+
 
     // PostgreSQL драйвер (для подключения к базе данных)
     implementation("org.postgresql:postgresql")
@@ -27,6 +31,8 @@ dependencies {
 
     implementation("me.paulschwarz:spring-dotenv:3.0.0")
 
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly("org.projectlombok:lombok:1.18.36")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

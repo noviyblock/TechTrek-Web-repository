@@ -34,6 +34,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly("org.projectlombok:lombok:1.18.36")
 
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")

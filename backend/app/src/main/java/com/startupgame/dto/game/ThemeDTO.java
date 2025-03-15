@@ -6,5 +6,8 @@ import lombok.Data;
 public class ThemeDTO {
     private Long id;
     private String name;
-    public ThemeDTO(Long id, String name) {}
+    public ThemeDTO(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

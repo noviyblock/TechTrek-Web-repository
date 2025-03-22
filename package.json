@@ -1,0 +1,20 @@
+{
+  "name": "techtrek-web-repository",
+  "version": "1.0.0",
+  "description": "[Редактируемый гейм-дизайн документ](https://docs.google.com/document/d/1ipgYsqZJKgKANSeSxxwN7SKeedVZGZCGrAGbxDAUHug/edit?tab=t.0)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noviyblock/TechTrek-Web-repository.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noviyblock/TechTrek-Web-repository/issues"
+  },
+  "homepage": "https://github.com/noviyblock/TechTrek-Web-repository#readme"
+}

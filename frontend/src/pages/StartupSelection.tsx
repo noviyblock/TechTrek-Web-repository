@@ -10,7 +10,7 @@ const categories = [
   { name: "Other...", color: "#D4D4D8" },
 ];
 
-const StartupSelection = () => {
+function StartupSelection() {
   return (
     <div className="startup-container">
       <h1>Добро пожаловать в игру для предпринимателей TechTrack!</h1>

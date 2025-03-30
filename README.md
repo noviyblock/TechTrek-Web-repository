@@ -16,7 +16,7 @@
 
 [Кросс-проверка по чек-листу и фитбек от однокурсников](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?usp=sharing)
 
-[Схема API](http://95.174.91.208:8080/#/)
+[Схема API](https://noviyblock.github.io/TechTrek-Web-repository/docs/api/)
 
 ## Документация проекта:
 [Редактируемый гейм-дизайн документ](https://docs.google.com/document/d/1ipgYsqZJKgKANSeSxxwN7SKeedVZGZCGrAGbxDAUHug/edit?tab=t.0)

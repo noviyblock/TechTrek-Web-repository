@@ -1,4 +1,12 @@
 # TechTrek-Web-repository
+TechTrek Web — это адаптивная бизнес-игра с ИИ, которая имитирует реальные условия и помогает пользователям развивать предпринимательские навыки без финансовых рисков.
+Команда проекта:
+* Черных А.В - TeamLead, PM, Buisness Analyst
+* Шапиро П.С - UX/UI Designer
+* Шишкин С.А - Fullstack, QA
+* Штоколов Ф.В. - Fullstack, QA
+* Меньшиков Н.С - Fullstack, QA
+* Родионов Р.О - ML-developer
 ## Ссылки для проекта:
 [Трекер задач](https://github.com/users/noviyblock/projects/2/views/6)
 

@@ -20,6 +20,6 @@
 [Презентация ТЗ.pptx](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/TechTreck%20Web-%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F-%D0%A2%D0%97.pptx)
 
 ## Видео к проекту:
-[Видеопрезентация ТЗ](https://drive.google.com/drive/folders/1iNlQVyM6vO9UG1IO_JK2kfKm9IXNbqTh?usp=drive_link)
+[Видеопрезентация ТЗ](https://disk.yandex.ru/d/5gtE36Z45lKDHQ)
 
 

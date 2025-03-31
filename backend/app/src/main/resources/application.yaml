@@ -13,5 +13,9 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 1d
+
 server:
   port: 8080

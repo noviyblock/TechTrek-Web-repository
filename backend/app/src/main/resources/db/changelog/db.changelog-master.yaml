@@ -1,3 +1,9 @@
 databaseChangeLog:
   - include:
       file: classpath:db/changelog/initial-tables.yaml
+  - include:
+      file: classpath:db/changelog/modify-column-types.yaml
+  - include:
+      file: classpath:db/changelog/add-column.yaml
+  - include:
+      file: classpath:db/changelog/changelog-usergame.yaml

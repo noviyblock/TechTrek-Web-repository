@@ -1,11 +1,15 @@
 package com.startupgame.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "registered_user")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisteredUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

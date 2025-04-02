@@ -20,8 +20,6 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    @Value("${jwt.expiration}")
-    private String expiration;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -47,14 +45,13 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, long expiration) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+        return createToken(claims, userDetails.getUsername(), expiration);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, String subject, long expiration) {
         long now = System.currentTimeMillis();
-        long expiration = getExpirationInMillis();
         return Jwts.builder()
                 .claims(claims)
                 .subject(subject)
@@ -64,24 +61,24 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateAccessToken(UserDetails userDetails) {
+        //15 min
+        long ACCESS_TOKEN_VALIDITY = 15 * 60 * 1000;
+        return generateToken(userDetails, ACCESS_TOKEN_VALIDITY);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        //7 days
+        long REFRESH_TOKEN_VALIDITY = 7L * 24 * 60 * 60 * 1000;
+        return generateToken(userDetails, REFRESH_TOKEN_VALIDITY);
+    }
+
     public boolean validateToken(String token, UserDetails userDetails) {
         return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private long getExpirationInMillis() {
-        if (expiration.endsWith("d")) {
-            return Long.parseLong(expiration.replace("d", "")) * 24 * 60 * 60 * 1000;
-        } else if (expiration.endsWith("h")) {
-            return Long.parseLong(expiration.replace("h", "")) * 60 * 60 * 1000;
-        } else if (expiration.endsWith("m")) {
-            return Long.parseLong(expiration.replace("m", "")) * 60 * 1000;
-        } else {
-            return Long.parseLong(expiration);
-        }
     }
 
 }

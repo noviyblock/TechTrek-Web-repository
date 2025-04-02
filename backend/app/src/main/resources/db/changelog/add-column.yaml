@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-team-name-column
+      author: Nick Menshikov
+      changes:
+        - addColumn:
+            tableName: game
+            columns:
+              - column:
+                  name: team_name
+                  type: varchar(255)

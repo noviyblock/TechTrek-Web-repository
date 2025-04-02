@@ -64,3 +64,38 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_user_game
                     references: game(id)
+  - changeSet:
+      id: create-table-registered-user
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: registered_user
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_id
+                    references: user(id)
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

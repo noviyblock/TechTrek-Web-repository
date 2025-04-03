@@ -29,3 +29,6 @@ Thumbs.db
 # Игнорируем локальные конфигурации
 **/application-local.properties
 **/local.env
+**/venv/
+**/__pycache__/
+

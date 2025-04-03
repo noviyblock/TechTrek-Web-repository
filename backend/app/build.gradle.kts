@@ -1,41 +1,50 @@
 plugins {
-    // Подключаем плагины для Spring Boot и управления зависимостями
-    id("org.springframework.boot") version "2.7.0"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.springframework.boot") version "3.4.2"
+    id("io.spring.dependency-management") version "1.1.0"
     java
 }
 
 group = "com.startupgame"
 version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
-    // Используем Maven Central для загрузки зависимостей
     mavenCentral()
 }
 
 dependencies {
-    // Spring Boot Starter Web (для создания REST API)
     implementation("org.springframework.boot:spring-boot-starter-web")
-
-    // Spring Boot Starter Data JPA (для работы с базой данных)
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+    implementation("org.springframework.boot:spring-boot-starter-validation:3.4.3")
+
 
     // PostgreSQL драйвер (для подключения к базе данных)
     implementation("org.postgresql:postgresql")
 
-    // Spring Boot Starter Security (для аутентификации и авторизации)
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    // https://mvnrepository.com/artifact/org.liquibase/liquibase-core
+    implementation("org.liquibase:liquibase-core:4.31.1")
 
-    // Spring Boot Starter Test (для тестирования)
+    implementation ("org.springframework.boot:spring-boot-configuration-processor")
+
+    implementation("me.paulschwarz:spring-dotenv:3.0.0")
+
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly("org.projectlombok:lombok:1.18.36")
+
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    // JUnit Jupiter (для unit-тестов)
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 tasks.withType<Test> {
-    // Используем JUnit Platform для тестов
     useJUnitPlatform()
 }

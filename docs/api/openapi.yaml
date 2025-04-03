@@ -1,0 +1,1002 @@
+openapi: 3.0.4
+info:
+  title: TechTrek API
+  description: "API для пошаговой игры TechTrek (стартап-симуляции)."
+  version: 0.0.2
+
+servers:
+  - url: http://localhost:8080/api
+    description: Локальный сервер разработки
+tags:
+  - name: auth
+    description: Аутентификация пользователя
+
+
+paths:
+  /auth/status:
+    get:
+      tags: 
+        - auth
+      summary: Проверить статус авторизации
+      description: |
+        Эндпоинт проверяет, авторизован ли пользователь и возвращает данные
+        о нём, если сессия валидна.
+      responses:
+        '200':
+          description: Статус авторизованного или неавторизованного пользователя.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorized:
+                    type: boolean
+                  user:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+        '401':
+          description: Неавторизован (нет валидной сессии)
+          
+  /auth/register:
+    post:
+      tags: 
+        - auth
+      summary: Регистрация нового пользователя
+      description: Создание новой учётной записи пользователя и возврат access/refresh токенов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Username is already in use"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "An unexpected error occurred"
+
+
+  /auth/login:
+    post:
+      tags: 
+        - auth
+      summary: Аутентификация пользователя
+      description: Авторизация по логину и паролю. Возвращает access и refresh токены.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        '401':
+          description: Неверный логин или пароль
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Invalid credentials"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "An unexpected error occurred"
+  
+            
+  
+  
+  /api/domains:
+    get:
+      summary: Список сфер для новой игры
+      description: Возвращает список доступных сфер стартапа (IT, FinTech и т.д.).
+      responses:
+        '200':
+          description: Список сфер
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Domain'
+
+
+  /api/goals:
+    get:
+      summary: Список целей по заданной сфере
+      description: Получает список целей и миссий для выбранной сферы (например, IT).
+      parameters:
+        - in: query
+          name: domain
+          schema:
+            type: string
+          required: true
+          description: Название (или ID) сферы.
+      responses:
+        '200':
+          description: Список целей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+
+
+  /api/game/init:
+    post:
+      summary: Создание новой игровой сессии
+      description: |
+        Инициирует новую игру на основе выбранной сферы, цели и названия стартапа.
+        Возвращает ID сессии и стартовые данные (ресурсы, команда и т.д.).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                goal:
+                  type: string
+                startupName:
+                  type: string
+      responses:
+        '200':
+          description: Успешная инициализация игры
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                  resources:
+                    $ref: '#/components/schemas/Resources'
+                  team:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
+
+
+
+  /api/game/start:
+    post:
+      summary: Начало (запуск) игры
+      description: Переводит игру в активное состояние.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  description: ID текущей игровой сессии
+      responses:
+        '200':
+          description: Успешный старт игры
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Например, "game_started"
+
+
+  /api/employees/available:
+    get:
+      summary: Список доступных сотрудников по роли
+      description: |
+        Возвращает список потенциальных кандидатов для найма, например, CTO.
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+          required: false
+          description: Уточняющая роль, по которой хотим найти сотрудников (например, "CTO").
+      responses:
+        '200':
+          description: Список доступных сотрудников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+
+
+  /api/employees/hire:
+    post:
+      summary: Найм сотрудника
+      description: |
+        Проверяет бюджет, обновляет состав команды и возвращает результат найма.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                employeeId:
+                  type: string
+      responses:
+        '200':
+          description: Подтверждение успешного найма
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: "hire_success"
+        '400':
+          description: Ошибка при найме (например, недостаточно средств)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: "Error message"
+    
+  /api/crisis/active:
+    get:
+      summary: Получить информацию о текущем кризисе
+      description: |
+        Возвращает данные об активном (не завершённом) кризисном событии для текущей сессии. 
+        Если кризиса нет, может вернуться пустой объект или 404.
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+          required: true
+          description: ID игровой сессии
+      responses:
+        '200':
+          description: Данные о текущем кризисе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrisisEvent'
+        '404':
+          description: Кризис для данной сессии не найден / отсутствует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/crisis/decision:
+    post:
+      summary: Выбрать способ решения кризиса
+      description: |
+        Игрок принимает решение, каким образом будет обрабатывать кризис:
+        - использовать C-level эксперта (если доступен),
+        - либо пытаться решить самостоятельно.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrisisDecisionRequest'
+      responses:
+        '200':
+          description: Решение принято, возвращаем подтверждение и (опционально) обновлённые данные кризиса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Decision accepted"
+                  updatedCrisis:
+                    $ref: '#/components/schemas/CrisisEvent'
+        '400':
+          description: Некорректный запрос (например, эксперт недоступен)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Кризис не найден для указанной сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/crisis/solution:
+    post:
+      summary: Отправить решение (текст/голос) для анализа и завершения кризиса
+      description: |
+        Игрок вводит своё окончательное решение (текст или голос, который может быть преобразован в текст на клиенте),
+        после чего движок игры вызывает LLM-сервис для анализа, выполняет бросок 2d6 с модификаторами и сохраняет результат.
+        Возвращает итог (провал, частичный успех или успех) и обновлённые ресурсы.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrisisSolutionRequest'
+      responses:
+        '200':
+          description: Возвращает результат разрешения кризиса и новые параметры состояния
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrisisSolutionResponse'
+        '400':
+          description: Некорректные данные (например, нет активного кризиса)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Кризис не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+
+  /api/actions/available:
+    get:
+      summary: Список доступных действий для игрока
+      description: |
+        Возвращает перечень возможных действий, которые игрок может совершить в данный момент,
+        с учётом текущих ресурсов, состояния игры и т.д. (например, "Hire Employee", "Buy Asset", "Research").
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+          required: true
+          description: ID игровой сессии
+      responses:
+        '200':
+          description: Список доступных действий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Action'
+        '404':
+          description: Сессия не найдена или другой контекст ошибки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/assets:
+    get:
+      summary: Список доступных активов для покупки
+      description: |
+        Отдаёт данные об активах (их цену, эффект), которые игрок может приобрести с учётом текущего бюджета.
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+          required: true
+          description: ID игровой сессии
+        - in: query
+          name: budget
+          schema:
+            type: integer
+          required: false
+          description: Текущий бюджет (или передаётся серверу для фильтрации)
+      responses:
+        '200':
+          description: Список активов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+        '404':
+          description: Сессия не найдена (или активы не найдены)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/assets/buy:
+    post:
+      summary: Купить актив
+      description: |
+        Пытается приобрести указанный актив (assetId). Если бюджет достаточен, 
+        списывает средства и применяет эффекты; иначе возвращает ошибку.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyAssetRequest'
+      responses:
+        '200':
+          description: Покупка успешна, возвращает подтверждение и обновлённые ресурсы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Asset purchased successfully"
+                  updatedResources:
+                    $ref: '#/components/schemas/ResourceState'
+                  purchasedAsset:
+                    $ref: '#/components/schemas/Asset'
+        '400':
+          description: Недостаточно средств или другой контекст ошибки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Актив не найден / Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+
+  /api/presentation/prepare:
+    get:
+      summary: Подготовка к презентации
+      description: |
+        Возвращает данные о предстоящей презентации: ее тип (MVP, финал, и т.д.), критерии оценки,
+        а также текущее состояние/метрики (если нужно).
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+          required: true
+          description: "ID игровой сессии"
+      responses:
+        '200':
+          description: Информация о презентации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationInfo'
+        '404':
+          description: Сессия не найдена / нет презентации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/presentation/analyze:
+    post:
+      summary: Предварительный анализ текста/данных презентации
+      description: |
+        Отправляет введённое описание, тезисы, а также любые вспомогательные данные для LLM-сервиса.
+        Возвращает подсказки, что можно улучшить в презентации, и оценку полноты.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresentationAnalysisRequest'
+      responses:
+        '200':
+          description: Анализ презентации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationAnalysisResponse'
+        '400':
+          description: Ошибка в теле запроса (недостаточно данных)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/presentation/submit:
+    post:
+      summary: Отправить финальную версию презентации
+      description: |
+        После того, как пользователь закончил редактирование, он подтверждает готовность. 
+        Сервер (Engine) сохраняет финальную версию и передает ее "Судье" (Judge) для комплексной оценки.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalPresentationRequest'
+      responses:
+        '200':
+          description: Презентация принята к оценке
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Presentation submitted successfully"
+                  submissionId:
+                    type: string
+                    example: "submission-123"
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Сессия или этап презентации не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/presentation/result:
+    get:
+      summary: Результат оценки презентации
+      description: |
+        Возвращает детальный отчет от "Оценщика" (Judge): сильные/слабые стороны, рекомендации,
+        бонусы/штрафы. Если это MVP-этап – возможно обновление финансирования, если финал – итоговый score.
+      parameters:
+        - in: query
+          name: sessionId
+          schema:
+            type: string
+          required: true
+          description: "ID игровой сессии"
+        - in: query
+          name: submissionId
+          schema:
+            type: string
+          required: true
+          description: "ID отправленной презентации"
+      responses:
+        '200':
+          description: Оценочный лист + финальный результат
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JudgingResult'
+        '404':
+          description: Результат еще не готов или не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+                    
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        username:
+          type: string
+          
+    Domain:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        domain:
+          type: string
+        description:
+          type: string
+
+    Resources:
+      type: object
+      properties:
+        budget:
+          type: integer
+          description: "Начальный бюджет"
+
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        salary:
+          type: integer
+          
+    CrisisEvent:
+        type: object
+        properties:
+          crisisId:
+            type: string
+            example: "crisis-123"
+          type:
+            type: string
+            description: "Тип кризиса (например, 'SecurityBreach', 'FinancialTrouble' и т.д.)"
+            example: "SecurityBreach"
+          complexity:
+            type: string
+            description: "Уровень сложности кризиса"
+            example: "High"
+          description:
+            type: string
+            description: "Краткое описание или текст события"
+            example: "Утечка данных из системы"
+          timeLeft:
+            type: integer
+            description: "Оставшееся время (секунды/минуты) на решение кризиса"
+            example: 300
+          status:
+            type: string
+            description: "Текущее состояние кризиса (active, resolved, failed, etc.)"
+            example: "active"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Crisis not found"
+
+    CrisisDecisionRequest:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: "ID игровой сессии"
+          example: "session-xyz"
+        crisisId:
+          type: string
+          description: "ID текущего кризиса"
+          example: "crisis-123"
+        useExpert:
+          type: boolean
+          description: "Флаг, указывающий, что игрок решил привлечь эксперта"
+          example: true
+        expertId:
+          type: string
+          description: "ID эксперта, если требуется конкретный эксперт"
+          example: "expert-007"
+      required:
+        - sessionId
+        - crisisId
+        - useExpert
+
+    CrisisSolutionRequest:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: "ID игровой сессии"
+          example: "session-xyz"
+        crisisId:
+          type: string
+          description: "ID кризиса"
+          example: "crisis-123"
+        solutionText:
+          type: string
+          description: "Формулировка решения (может быть результатом распознавания речи, если голос)"
+          example: "Срочно обновить все пароли, отключить скомпрометированные узлы..."
+      required:
+        - sessionId
+        - crisisId
+        - solutionText
+
+    CrisisSolutionResponse:
+      type: object
+      properties:
+        roll:
+          type: integer
+          description: "Результат броска 2d6"
+          example: 7
+        outcome:
+          type: string
+          description: "Итог разрешения кризиса (critical_fail, partial_success, critical_success)"
+          example: "partial_success"
+        updatedResources:
+          type: object
+          description: "Новые параметры ресурсов после разрешения кризиса"
+          properties:
+            budget:
+              type: integer
+              example: 85000
+            reputation:
+              type: integer
+              example: 45
+        message:
+          type: string
+          description: "Дополнительный текст о результате"
+          example: "Частично удалось устранить последствия, но репутация пострадала"
+        updatedCrisis:
+          $ref: '#/components/schemas/CrisisEvent'
+          
+          
+    Action:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "buyAsset"
+        name:
+          type: string
+          example: "Купить актив"
+        description:
+          type: string
+          example: "Позволяет приобрести новый актив для расширения возможностей"
+    Asset:
+      type: object
+      properties:
+        assetId:
+          type: string
+          example: "asset-123"
+        name:
+          type: string
+          example: "Серверная стойка"
+        cost:
+          type: integer
+          example: 10000
+        description:
+          type: string
+          example: "Повышает производительность вашей инфраструктуры"
+        effects:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "productivity"
+              value:
+                type: integer
+                example: 5
+
+    BuyAssetRequest:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: "ID текущей игровой сессии"
+          example: "session-xyz"
+        assetId:
+          type: string
+          description: "ID актива, который мы хотим купить"
+          example: "asset-123"
+      required:
+        - sessionId
+        - assetId   
+    ResourceState:
+      type: object
+      description: "Текущее состояние ресурсов (бюджет, репутация и т.д.)"
+      properties:
+        budget:
+          type: integer
+          example: 50000
+        reputation:
+          type: integer
+          example: 85
+    PresentationInfo:
+      type: object
+      properties:
+        stageType:
+          type: string
+          description: "Тип презентации (MVP, финальная, промежуточная и т.д.)"
+          example: "MVP"
+        criteria:
+          type: array
+          description: "Критерии оценки"
+          items:
+            type: string
+          example: ["Инновационность", "Финансовая устойчивость", "Командная компетенция"]
+        currentMetrics:
+          type: object
+          description: "Доп. метрики проекта"
+          properties:
+            revenue:
+              type: integer
+              example: 100000
+            userBase:
+              type: integer
+              example: 5000
+        recommendations:
+          type: string
+          description: "Общие рекомендации для улучшения"
+          example: "Сфокусируйтесь на готовности MVP к тестированию"
+
+
+    PresentationAnalysisRequest:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: "ID игровой сессии"
+          example: "session-xyz"
+        content:
+          type: string
+          description: "Основной текст презентации или тезисы"
+          example: "Наша компания планирует..."
+        attachments:
+          type: array
+          description: "Ссылки на приложения (таблицы, графики)"
+          items:
+            type: string
+            example: "http://example.com/data.pdf"
+      required:
+        - sessionId
+        - content
+
+
+    PresentationAnalysisResponse:
+      type: object
+      properties:
+        coverageScore:
+          type: integer
+          description: "Оценка полноты (0-100 или другая шкала)"
+          example: 85
+        suggestions:
+          type: array
+          description: "Список рекомендаций по улучшению"
+          items:
+            type: string
+          example: ["Уточните бизнес-модель", "Добавьте маркетинговую стратегию"]
+        highlights:
+          type: array
+          description: "Что уже хорошо отражено в презентации"
+          items:
+            type: string
+          example: ["Команда с сильным опытом", "Чётко определённая проблема"]
+
+
+    FinalPresentationRequest:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          example: "session-xyz"
+        finalContent:
+          type: string
+          description: "Финальный текст презентации"
+          example: "Мы готовы представить прототип..."
+        finalAttachments:
+          type: array
+          description: "Ссылки на итоговые материалы (прототип, фин. прогнозы)"
+          items:
+            type: string
+            example: "example"
+      required:
+        - sessionId
+        - finalContent
+
+
+    JudgingResult:
+      type: object
+      properties:
+        scoreSheet:
+          type: object
+          description: "Детальный список оценок по критериям"
+          properties:
+            innovation:
+              type: integer
+              example: 8
+            feasibility:
+              type: integer
+              example: 7
+            team:
+              type: integer
+              example: 9
+        strengths:
+          type: array
+          items:
+            type: string
+          description: "Сильные стороны презентации / проекта"
+          example: ["Высокая команда компетенции", "Чёткая проблематика"]
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: "Рекомендации по дальнейшему развитию"
+          example: ["Оптимизировать расходы", "Усилить маркетинг"]
+        bonusOrPenalty:
+          type: integer
+          description: "Числовой бонус/штраф к финансированию или репутации"
+          example: 20000
+        finalFunding:
+          type: integer
+          description: "Новое финансирование (если MVP-этап)"
+          example: 120000
+        finalScore:
+          type: integer
+          description: "Итоговый балл (если финальный этап)"
+          example: 85
+        message:
+          type: string
+          description: "Сообщение о результате"
+          example: "Презентация успешно защищена. Финансирование увеличено."

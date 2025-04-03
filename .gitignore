@@ -31,4 +31,4 @@ Thumbs.db
 **/local.env
 **/venv/
 **/__pycache__/
-
+.env

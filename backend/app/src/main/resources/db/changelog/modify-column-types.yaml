@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: change-fk-type-theme-id
+      author: Nick Menshikov
+      changes:
+        - modifyDataType:
+            tableName: game
+            columnName: theme_id
+            newDataType: bigint
+  - changeSet:
+      id: change-fk-type-game-id
+      author: Nick Menshikov
+      changes:
+        - modifyDataType:
+            tableName: user
+            columnName: game_id
+            newDataType: bigint

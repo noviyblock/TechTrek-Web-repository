@@ -4,6 +4,7 @@ import com.startupgame.dto.auth.AuthResponse;
 import com.startupgame.dto.auth.LoginRequest;
 import com.startupgame.dto.auth.RefreshTokenRequest;
 import com.startupgame.dto.auth.RegisterRequest;
+import com.startupgame.exception.BadCredentialsException;
 import com.startupgame.exception.UserAlreadyExistsException;
 import com.startupgame.service.auth.AuthService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -47,7 +48,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.authenticate(request);
-        return ResponseEntity.ok(response);
+        try {
+            AuthResponse response = authService.authenticate(request);
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
     }
 }

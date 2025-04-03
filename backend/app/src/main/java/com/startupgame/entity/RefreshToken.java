@@ -1,28 +1,27 @@
 package com.startupgame.entity;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
-@Table(name = "registered_user")
+@Table(name = "refresh_token")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisteredUser {
+public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String tokenValue;
 
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    //TODO override method toString
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
+

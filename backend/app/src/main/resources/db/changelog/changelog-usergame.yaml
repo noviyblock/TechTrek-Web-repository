@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-table-and-add-columns
+      author: Nick Menshikov
+      changes:
+        - dropColumn:
+            tableName: registered_user
+            columnName: user_id
+
+        - renameTable:
+            oldTableName: user
+            newTableName: user_game
+
+        - renameColumn:
+            tableName: user_game
+            oldColumnName: id
+            newColumnName: user_id
+
+        - addColumn:
+            tableName: user_game
+            columns:
+              - column:
+                  name: start_game_time
+                  type: datetime
+              - column:
+                  name: end_game_time
+                  type: datetime
+              - column:
+                  name: score
+                  type: integer
+
+        - dropPrimaryKey:
+            tableName: user_game
+
+        - addPrimaryKey:
+            tableName: user_game
+            columnNames: user_id, game_id
+
+        - addForeignKeyConstraint:
+            baseTableName: user_game
+            baseColumnNames: user_id
+            referencedTableName: registered_user
+            referencedColumnNames: id
+            constraintName: fk_usergame_user
+
+        - addForeignKeyConstraint:
+            baseTableName: user_game
+            baseColumnNames: game_id
+            referencedTableName: game
+            referencedColumnNames: id
+            constraintName: fk_usergame_game

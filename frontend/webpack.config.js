@@ -8,7 +8,8 @@ module.exports = {
   },
   devServer: {
     static: './public', // Папка для статических файлов
-    port: 5432, // Порт для разработки
+    port: 3000, // Порт для разработки
+    historyApiFallback: true,
   },
   module: {
     rules: [

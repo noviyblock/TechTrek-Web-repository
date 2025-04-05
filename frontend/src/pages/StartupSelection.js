@@ -1,30 +1,38 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import "../App.css";
 
-const categories = [
-  { name: "E-commerce", color: "#006FEE" },
-  { name: "Fintech", color: "#F5A524" },
-  { name: "Medtech", color: "#17C964" },
-  { name: "GameTech", color: "#52525B" },
-  { name: "EdTech", color: "#7828C8" },
-  { name: "AgroTech", color: "#F31260" },
-  { name: "Other...", color: "#D4D4D8" },
+const sectors = [
+  { name: "E-commerce", color: "#007bff" },
+  { name: "Fintech", color: "#ffbf00" },
+  { name: "Medtech", color: "#28a745" },
+  { name: "GameTech", color: "#6c757d" },
+  { name: "EdTech", color: "#6f42c1" },
+  { name: "AgroTech", color: "#dc3545" },
 ];
 
 const StartupSelection = () => {
+  console.log("StartupSelection загружен");
+  const navigate = useNavigate();
+
+  
+  
+
   return (
     <div className="startup-container">
-      <h1>Добро пожаловать в игру для предпринимателей TechTrack!</h1>
+      <h1>Добро пожаловать в TechTrack!</h1>
       <div className="selection-box">
-        <h2>Выберите сферу, в которой вы бы хотели запустить стартап:</h2>
+        <h2>Выберите сферу, в которой вы хотите запустить стартап:</h2>
         <div className="categories">
-          {categories.map((category, index) => (
-            <div
-              key={index}
+          {sectors.map((sector) => (
+            <button
+              key={sector.name}
               className="category"
-              style={{ backgroundColor: category.color }}
+              style={{ backgroundColor: sector.color }}
+              onClick={() => navigate(`/startup/${sector.name.toLowerCase()}`)}
             >
-              {category.name}
-            </div>
+              {sector.name}
+            </button>
           ))}
         </div>
       </div>

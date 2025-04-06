@@ -1,6 +1,6 @@
-import './App.css';
+import '../styles/App.css';
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import StartupSelection from "./pages/StartupSelection";
+import StartupSelection from "../pages/StartupSelection";
 
 function App() {
   return (

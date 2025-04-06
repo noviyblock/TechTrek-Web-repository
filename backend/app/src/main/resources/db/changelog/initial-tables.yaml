@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-table-theme
+      id: create-table-sphere
       author: Nick Menshikov
       changes:
         - createTable:
-            tableName: theme
+            tableName: sphere
             columns:
               - column:
                   name: id
@@ -49,6 +49,32 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
+      id: create-table-mission
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: mission
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sphere_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_mission_sphere
+                    references: sphere(id)
+              - column:
+                  name: mission_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
       id: create-table-game
       author: Nick Menshikov
       changes:
@@ -67,12 +93,12 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: theme_id
+                  name: mission_id
                   type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_game_theme
-                    references: theme(id)
+                    foreignKeyName: fk_game_mission
+                    references: mission(id)
               - column:
                   name: user_id
                   type: bigint

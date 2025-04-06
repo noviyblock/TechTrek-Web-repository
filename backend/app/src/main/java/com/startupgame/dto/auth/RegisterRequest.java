@@ -1,9 +1,12 @@
 package com.startupgame.dto.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.validation.constraints.*;
+import lombok.RequiredArgsConstructor;
 
 @Data
+@AllArgsConstructor
 public class RegisterRequest {
     @NotBlank(message = "Username is required")
     private String username;

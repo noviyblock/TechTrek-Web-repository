@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-table-theme
+      id: create-table-sphere
       author: Nick Menshikov
       changes:
         - createTable:
-            tableName: theme
+            tableName: sphere
             columns:
               - column:
                   name: id
@@ -18,6 +18,62 @@ databaseChangeLog:
                   constraints:
                     primaryKey: false
                     nullable: false
+
+  - changeSet:
+      id: create-table-users
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: create-table-mission
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: mission
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sphere_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_mission_sphere
+                    references: sphere(id)
+              - column:
+                  name: mission_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
   - changeSet:
       id: create-table-game
       author: Nick Menshikov
@@ -37,65 +93,49 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: theme_id
-                  type: bigserial
+                  name: mission_id
+                  type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_game_theme
-                    references: theme(id)
-
-  - changeSet:
-      id: create-table-user
-      author: Nick Menshikov
-      changes:
-        - createTable:
-            tableName: user
-            columns:
-              - column:
-                  name: id
-                  type: bigserial
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: game_id
-                  type: bigserial
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_user_game
-                    references: game(id)
-  - changeSet:
-      id: create-table-registered-user
-      author: Nick Menshikov
-      changes:
-        - createTable:
-            tableName: registered_user
-            columns:
-              - column:
-                  name: id
-                  type: bigserial
-                  constraints:
-                    primaryKey: true
-                    nullable: false
+                    foreignKeyName: fk_game_mission
+                    references: mission(id)
               - column:
                   name: user_id
                   type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_user_id
-                    references: user(id)
+                    foreignKeyName: fk_game_user
+                    references: users(id)
+
+
+  - changeSet:
+      id: create-refresh-token
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: refresh_token
+            columns:
               - column:
-                  name: username
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: token_value
                   type: varchar(255)
                   constraints:
                     nullable: false
+                    unique: true
               - column:
-                  name: password
-                  type: text
+                  name: user_id
+                  type: bigint
                   constraints:
                     nullable: false
-              - column:
-                  name: email
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: refresh_token
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_refresh_token_use

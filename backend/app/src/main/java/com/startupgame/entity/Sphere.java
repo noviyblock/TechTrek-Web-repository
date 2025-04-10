@@ -6,7 +6,7 @@ import lombok.Data;
 @Entity
 @Table(name = "theme")
 @Data
-public class Theme {
+public class Sphere {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

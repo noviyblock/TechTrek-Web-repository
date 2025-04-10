@@ -5,6 +5,12 @@ public class StartGameRequest {
     private String companyName;
     private Long userId;
 
+    public StartGameRequest(Long missionId, String companyName, Long userId) {
+        this.missionId = missionId;
+        this.companyName = companyName;
+        this.userId = userId;
+    }
+
     public Long getMissionId() {
         return missionId;
     }

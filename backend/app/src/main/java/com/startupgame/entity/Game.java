@@ -18,7 +18,7 @@ public class Game {
     private Double difficulty;
 
     @ManyToOne
-    private Theme theme;
+    private Mission mission;
 
     //TODO override method toString
 }

@@ -59,6 +59,14 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 
+    val mockitoCoreJar = configurations.testRuntimeClasspath.get()
+        .single { it.name.startsWith("mockito-core") }
+
+    jvmArgs(
+        "-javaagent:${mockitoCoreJar.absolutePath}",
+        "-Xshare:off"
+    )
+
     testLogging {
         events("passed", "skipped", "failed")
     }

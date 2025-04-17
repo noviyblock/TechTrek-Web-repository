@@ -1,5 +1,6 @@
 package com.startupgame.service.game;
 
+import com.startupgame.dto.game.GameStateDTO;
 import com.startupgame.dto.game.SphereDTO;
 import com.startupgame.entity.game.*;
 import com.startupgame.entity.user.User;
@@ -48,15 +49,15 @@ public class GameService {
      * Метод помечен {@code @Transactional}, для атомарности всей операции.
      * Если произойдет ошибка на любом этапе, все изменения в базе данных будут откатаны.
      *
-     * @param missionId    идентификатор миссии
-     * @param companyName  название компании
-     * @param username     имя пользователя
+     * @param missionId   идентификатор миссии
+     * @param companyName название компании
+     * @param username    имя пользователя
      * @return объект {@link Game}, созданная игра
-     * @throws EntityNotFoundException    если пользователь с указанным именем не найден
-     * @throws IllegalArgumentException   если миссия с таким id отсутствует
+     * @throws EntityNotFoundException  если пользователь с указанным именем не найден
+     * @throws IllegalArgumentException если миссия с таким id отсутствует
      */
     @Transactional
-    public Game startGame(Long missionId, String companyName, String username) {
+    public GameStateDTO startGame(Long missionId, String companyName, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         Mission mission = missionRepository.findById(missionId)
@@ -65,13 +66,14 @@ public class GameService {
         Game newGame = new Game();
 
         Resources resources = Resources.builder()
-                .money(10000L)
+                .money(100000L)
                 .motivation(50)
                 .reputation(50)
                 .productReadiness(0)
                 .technicReadiness(0)
                 .build();
         resourcesRepository.save(resources);
+
         Team team = Team.builder()
                 .juniorAmount(0)
                 .middleAmount(0)
@@ -88,6 +90,7 @@ public class GameService {
                 .endTime(null)
                 .build();
         gameRepository.save(game);
+
         Turn firstTurn = Turn.builder()
                 .game(game)
                 .turnNumber(1)
@@ -96,6 +99,27 @@ public class GameService {
                 .situation("Начало игры")
                 .build();
         turnRepository.save(firstTurn);
-        return game;
+
+        return buildGameStateDTO(game, firstTurn, resources, team);
+    }
+
+    private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources, Team team) {
+        return GameStateDTO.builder()
+                .gameId(game.getId())
+                .companyName(game.getCompanyName())
+                .stage(turn.getStage())
+                .turnNumber(turn.getTurnNumber())
+                .monthsPassed(turn.getTurnNumber() * 6)
+                .money(resources.getMoney())
+                .technicReadiness(resources.getTechnicReadiness())
+                .productReadiness(resources.getProductReadiness())
+                .motivation(resources.getMotivation())
+                .reputation(resources.getReputation())
+                .juniors(team.getJuniorAmount())
+                .middles(team.getMiddleAmount())
+                .seniors(team.getSeniorAmount())
+                .situationText(turn.getSituation())
+                .missionId(game.getMission().getId())
+                .build();
     }
 }

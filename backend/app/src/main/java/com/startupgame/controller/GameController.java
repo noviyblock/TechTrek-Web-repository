@@ -1,7 +1,7 @@
 package com.startupgame.controller;
 
+import com.startupgame.dto.game.GameStateDTO;
 import com.startupgame.dto.game.SphereDTO;
-import com.startupgame.entity.game.Game;
 import com.startupgame.service.game.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,13 +32,11 @@ public class GameController {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<Game> startGame(@RequestBody StartGameRequest request, Authentication authentication) {
+    public ResponseEntity<GameStateDTO> startGame(@RequestBody StartGameRequest request, Authentication authentication) {
         String username = authentication.getName();
-        Game game = gameService.startGame(
-                request.getMissionId(),
+        GameStateDTO dto = gameService.startGame(request.getMissionId(),
                 request.getCompanyName(),
-                username
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(game);
+                authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 }

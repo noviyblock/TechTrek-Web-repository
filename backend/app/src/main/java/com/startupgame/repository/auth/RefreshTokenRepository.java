@@ -1,7 +1,7 @@
-package com.startupgame.repository;
+package com.startupgame.repository.auth;
 
-import com.startupgame.entity.RefreshToken;
-import com.startupgame.entity.User;
+import com.startupgame.entity.auth.RefreshToken;
+import com.startupgame.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

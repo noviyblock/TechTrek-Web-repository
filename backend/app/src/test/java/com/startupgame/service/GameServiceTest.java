@@ -1,11 +1,11 @@
 package com.startupgame.service;
 
-import com.startupgame.entity.Game;
-import com.startupgame.entity.Mission;
-import com.startupgame.repository.GameRepository;
-import com.startupgame.repository.MissionRepository;
+import com.startupgame.entity.game.Game;
+import com.startupgame.entity.game.Mission;
+import com.startupgame.repository.game.GameRepository;
+import com.startupgame.repository.game.MissionRepository;
 import com.startupgame.service.game.GameService;
-import com.startupgame.dto.StartGameRequest;
+import com.startupgame.dto.game.StartGameRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

@@ -1,4 +1,4 @@
-package com.startupgame.entity;
+package com.startupgame.entity.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

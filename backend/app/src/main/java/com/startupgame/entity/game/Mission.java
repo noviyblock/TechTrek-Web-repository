@@ -1,4 +1,4 @@
-package com.startupgame.entity;
+package com.startupgame.entity.game;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,6 +11,4 @@ public class Mission {
 
     @ManyToOne
     private Sphere sphere;
-
-    // геттеры и сеттеры
 }

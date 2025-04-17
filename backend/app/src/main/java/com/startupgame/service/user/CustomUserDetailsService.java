@@ -1,7 +1,7 @@
 package com.startupgame.service.user;
 
-import com.startupgame.entity.User;
-import com.startupgame.repository.UserRepository;
+import com.startupgame.entity.user.User;
+import com.startupgame.repository.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

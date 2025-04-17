@@ -5,8 +5,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import com.startupgame.repository.MissionRepository;
-import com.startupgame.entity.Mission;
+import com.startupgame.repository.game.MissionRepository;
+import com.startupgame.entity.game.Mission;
 import org.springframework.data.domain.Page;
 
 @Service

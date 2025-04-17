@@ -11,7 +11,14 @@ https://github.com/noviyblock/TechTrek-Web-repository.git
 cd TechTrek-Web-repository
 
 # copy environment config
+# Linux/macOS:
 cp .env.example .env
+
+# Windows PowerShell:
+Copy-Item .env.example .env
+
+# Windows CMD
+copy .env.example .env
 
 # build and start all services
 docker compose up --build

@@ -1,9 +1,6 @@
 package com.startupgame.entity.game;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "resources")
 public class Resources {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +21,9 @@ public class Resources {
 
     private Integer motivation;
 
-    private Integer reputation;
-
     private Integer productReadiness;
 
     private Integer technicReadiness;
+
+    private Integer numberOfOffices;
 }

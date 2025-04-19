@@ -26,6 +26,7 @@ public class GameService {
     private final ResourcesRepository resourcesRepository;
     private final TeamRepository teamRepository;
     private final TurnRepository turnRepository;
+    private final SuperEmployeeRepository superEmployeeRepository;
 
     public List<SphereDTO> getThemes() {
         List<Sphere> themes = themeRepository.findAll();
@@ -58,52 +59,53 @@ public class GameService {
      */
     @Transactional
     public GameStateDTO startGame(Long missionId, String companyName, String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        Mission mission = missionRepository.findById(missionId)
-                .orElseThrow(() -> new IllegalArgumentException("Mission not found"));
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            Mission mission = missionRepository.findById(missionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Mission not found"));
 
-        Game newGame = new Game();
+            Resources resources = resourcesRepository.save(Resources.builder()
+                    .money(100000L)
+                    .motivation(50)
+                    .productReadiness(0)
+                    .technicReadiness(0)
+                    .numberOfOffices(0)
+                    .build());
 
-        Resources resources = Resources.builder()
-                .money(100000L)
-                .motivation(50)
-                .reputation(50)
-                .productReadiness(0)
-                .technicReadiness(0)
-                .build();
-        resourcesRepository.save(resources);
+            Team team = teamRepository.save(Team.builder()
+                    .juniorAmount(0)
+                    .middleAmount(0)
+                    .seniorAmount(0)
+                    .build());
 
-        Team team = Team.builder()
-                .juniorAmount(0)
-                .middleAmount(0)
-                .seniorAmount(0)
-                .build();
-        teamRepository.save(team);
+            Game game = gameRepository.save(Game.builder()
+                    .companyName(companyName)
+                    .difficulty(1.0)
+                    .mission(mission)
+                    .user(user)
+                    .team(team)
+                    .startTime(LocalDateTime.now())
+                    .endTime(null)
+                    .build());
 
-        Game game = Game.builder()
-                .companyName(companyName)
-                .difficulty(1.0)
-                .mission(mission)
-                .user(user)
-                .startTime(LocalDateTime.now())
-                .endTime(null)
-                .build();
-        gameRepository.save(game);
+            Turn firstTurn = turnRepository.save(Turn.builder()
+                    .game(game)
+                    .turnNumber(0)
+                    .stage(1)
+                    .resources(resources)
+                    .situation("Начало игры")
+                    .build());
 
-        Turn firstTurn = Turn.builder()
-                .game(game)
-                .turnNumber(1)
-                .stage(1)
-                .resources(resources)
-                .situation("Начало игры")
-                .build();
-        turnRepository.save(firstTurn);
-
-        return buildGameStateDTO(game, firstTurn, resources, team);
+            return buildGameStateDTO(game, firstTurn, resources, team);
     }
 
     private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources, Team team) {
+        List<SuperEmployee> superEmployees = superEmployeeRepository.findByTeamId(team.getId());
+
+        List<String> superEmployeeNames = superEmployees.stream()
+                .map(SuperEmployee::getName)
+                .toList();
+
         return GameStateDTO.builder()
                 .gameId(game.getId())
                 .companyName(game.getCompanyName())
@@ -114,12 +116,13 @@ public class GameService {
                 .technicReadiness(resources.getTechnicReadiness())
                 .productReadiness(resources.getProductReadiness())
                 .motivation(resources.getMotivation())
-                .reputation(resources.getReputation())
                 .juniors(team.getJuniorAmount())
                 .middles(team.getMiddleAmount())
                 .seniors(team.getSeniorAmount())
                 .situationText(turn.getSituation())
                 .missionId(game.getMission().getId())
+                .superEmployees(superEmployeeNames)
+                .numberOfOffices(resources.getNumberOfOffices())
                 .build();
     }
 }

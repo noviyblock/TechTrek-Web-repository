@@ -4,15 +4,20 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "sphere")
+@Table(name = "super_employee")
 @Data
-public class Sphere {
+public class SuperEmployee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "name")
     private String name;
 
-    //TODO override method toString
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
+
+    @Column(name = "bonus")
+    private Double bonus;
 }

@@ -10,10 +10,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "mission")
 public class Mission {
     @Id
     private Long id;
-    private String missionName;
+    @Column(name = "name")
+    private String name;
 
     @ManyToOne
     private Sphere sphere;

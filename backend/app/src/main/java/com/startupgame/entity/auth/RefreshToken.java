@@ -1,6 +1,7 @@
-package com.startupgame.entity;
+package com.startupgame.entity.auth;
 
 
+import com.startupgame.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -5,8 +5,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import com.startupgame.repository.SphereRepository;
-import com.startupgame.entity.Sphere;
+import com.startupgame.repository.game.SphereRepository;
+import com.startupgame.entity.game.Sphere;
 
 @Service
 public class SphereService {

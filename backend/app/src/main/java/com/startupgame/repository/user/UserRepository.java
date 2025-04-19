@@ -1,6 +1,6 @@
-package com.startupgame.repository;
+package com.startupgame.repository.user;
 
-import com.startupgame.entity.User;
+import com.startupgame.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

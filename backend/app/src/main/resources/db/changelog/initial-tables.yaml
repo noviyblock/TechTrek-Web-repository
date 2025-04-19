@@ -69,10 +69,33 @@ databaseChangeLog:
                     foreignKeyName: fk_mission_sphere
                     references: sphere(id)
               - column:
-                  name: mission_name
+                  name: name
                   type: varchar(255)
                   constraints:
                     nullable: false
+
+  - changeSet:
+      id: create-table-team
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: team
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: junior_amount
+                  type: integer
+              - column:
+                  name: middle_amount
+                  type: integer
+              - column:
+                  name: senior_amount
+                  type: integer
 
   - changeSet:
       id: create-table-game
@@ -93,6 +116,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: company_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
                   name: mission_id
                   type: bigint
                   constraints:
@@ -106,6 +134,18 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fk_game_user
                     references: users(id)
+              - column:
+                  name: start_time
+                  type: datetime
+              - column:
+                  name: end_time
+                  type: datetime
+              - column:
+                  name: team_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_game_team
+                    references: team(id)
 
 
   - changeSet:
@@ -139,3 +179,189 @@ databaseChangeLog:
             referencedTableName: users
             referencedColumnNames: id
             constraintName: fk_refresh_token_use
+
+  - changeSet:
+      id: create-table-resources
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: resources
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: money
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: motivation
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_readiness
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: technic_readiness
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: number_of_offices
+                  type: integer
+
+  - changeSet:
+      id: create-table-action-type
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: action_type
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: text
+
+  - changeSet:
+      id: create-table-turn
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: turn
+            columns:
+                - column:
+                    name: id
+                    type: bigserial
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                    name: game_id
+                    type: bigint
+                    constraints:
+                      foreignKeyName: fk_turn_game
+                      nullable: false
+                      references: game(id)
+                - column:
+                    name: resources_id
+                    type: bigint
+                    constraints:
+                      foreignKeyName: fk_turn_resources
+                      nullable: false
+                      references: resources(id)
+                - column:
+                    name: situation
+                    type: text
+                - column:
+                    name: answer
+                    type: text
+                - column:
+                    name: dice_number
+                    type: integer
+                - column:
+                    name: action_type_id
+                    type: bigint
+                    constraints:
+                      foreignKeyName: fk_turn_action_type_id
+                      references: action_type(id)
+                - column:
+                    name: stage
+                    type: integer
+                - column:
+                    name: turn_number
+                    type: integer
+
+  - changeSet:
+      id: create-table-presentation
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: presentation
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: game_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_presentation_game
+                    nullable: false
+                    references: game(id)
+              - column:
+                  name: turn_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_presentation_turn
+                    nullable: false
+                    references: turn(id)
+              - column:
+                  name: speech
+                  type: text
+
+
+  - changeSet:
+      id: create-table-super-employee
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: super_employee
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: team_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_super_employee_team
+                    references: team(id)
+              - column:
+                  name: name
+                  type: varchar(4)
+              - column:
+                  name: bonus
+                  type: double
+
+  - changeSet:
+      id: insert-spheres
+      author: Nick Menshikov
+      changes:
+        - insert:
+            tableName: sphere
+            columns:
+              - column:
+                  name: name
+                  value: "IT"
+
+  - changeSet:
+      id: insert-missions
+      author: Nick Menshikov
+      changes:
+        - insert:
+            tableName: mission
+            columns:
+              - column:
+                  name: name
+                  value: "Build a Website"
+              - column:
+                  name: sphere_id
+                  value: 1

@@ -19,11 +19,13 @@ public class GameStateDTO {
     private int technicReadiness;
     private int productReadiness;
     private int motivation;
-    private int reputation;
 
     private int juniors;
     private int middles;
     private int seniors;
+
+    private List<String> superEmployees;
+    private int numberOfOffices;
 
     private String situationText;
 }

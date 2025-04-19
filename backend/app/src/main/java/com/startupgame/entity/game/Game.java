@@ -37,5 +37,8 @@ public class Game {
 
     private LocalDateTime endTime;
 
+    @OneToOne
+    private Team team;
+
     //TODO override method toString
 }

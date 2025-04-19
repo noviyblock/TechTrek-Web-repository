@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "turn")
 public class Turn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

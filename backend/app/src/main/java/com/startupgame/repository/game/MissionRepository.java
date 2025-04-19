@@ -1,9 +1,9 @@
-package com.startupgame.repository;
+package com.startupgame.repository.game;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.startupgame.entity.Mission;
+import com.startupgame.entity.game.Mission;
 
 public interface MissionRepository extends JpaRepository<Mission, Long> {
 

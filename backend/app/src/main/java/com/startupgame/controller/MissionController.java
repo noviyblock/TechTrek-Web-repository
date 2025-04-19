@@ -1,7 +1,7 @@
 package com.startupgame.controller;
 
 
-import com.startupgame.entity.Mission;
+import com.startupgame.entity.game.Mission;
 import com.startupgame.service.game.MissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

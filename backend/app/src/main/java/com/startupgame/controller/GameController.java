@@ -1,18 +1,20 @@
 package com.startupgame.controller;
 
+import com.startupgame.dto.game.GameStateDTO;
 import com.startupgame.dto.game.SphereDTO;
-import com.startupgame.entity.Game;
 import com.startupgame.service.game.GameService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.startupgame.dto.StartGameRequest;
+import com.startupgame.dto.game.StartGameRequest;
+
 import java.util.List;
 
 @RestController
@@ -29,8 +31,12 @@ public class GameController {
         return ResponseEntity.ok(themes);
     }
 
-    @PostMapping("/game/start")
-    public Game startGame(@RequestBody StartGameRequest request) {
-        return gameService.startGame(request.getMissionId(), request.getCompanyName(), request.getUserId());
+    @PostMapping("/start")
+    public ResponseEntity<GameStateDTO> startGame(@RequestBody StartGameRequest request, Authentication authentication) {
+        String username = authentication.getName();
+        GameStateDTO dto = gameService.startGame(request.getMissionId(),
+                request.getCompanyName(),
+                authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 }

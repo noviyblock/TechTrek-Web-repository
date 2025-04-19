@@ -1,10 +1,10 @@
-package com.startupgame.entity;
+package com.startupgame.entity.game;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "theme")
+@Table(name = "sphere")
 @Data
 public class Sphere {
     @Id

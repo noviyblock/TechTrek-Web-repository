@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import com.startupgame.service.game.SphereService;
-import com.startupgame.entity.Sphere;
+import com.startupgame.entity.game.Sphere;
 
 @RestController
 public class SphereController {

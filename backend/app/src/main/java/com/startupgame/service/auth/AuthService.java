@@ -3,11 +3,11 @@ package com.startupgame.service.auth;
 import com.startupgame.dto.auth.AuthResponse;
 import com.startupgame.dto.auth.LoginRequest;
 import com.startupgame.dto.auth.RegisterRequest;
-import com.startupgame.entity.RefreshToken;
-import com.startupgame.entity.User;
+import com.startupgame.entity.auth.RefreshToken;
+import com.startupgame.entity.user.User;
 import com.startupgame.exception.UserAlreadyExistsException;
-import com.startupgame.repository.RefreshTokenRepository;
-import com.startupgame.repository.UserRepository;
+import com.startupgame.repository.auth.RefreshTokenRepository;
+import com.startupgame.repository.user.UserRepository;
 import com.startupgame.security.JwtUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +79,7 @@ public class AuthService {
 
         saveRefreshToken(user, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken, request.getUsername());
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     /**
@@ -150,7 +150,7 @@ public class AuthService {
 
         saveRefreshToken(user, refreshToken);
 
-        return new AuthResponse(accessToken, refreshToken, userDetails.getUsername());
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     private void saveRefreshToken(User user, String token) {

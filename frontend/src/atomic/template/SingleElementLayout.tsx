@@ -5,10 +5,17 @@ const SingleElementLayoutTemplate: React.FC<{
   children?: React.ReactNode;
   backable?: boolean;
   regenable?: boolean;
-  width?: string
+  width?: string;
   minWidth?: string;
   height?: string;
-}> = ({ children, backable = false, regenable = false, width, minWidth, height }) => (
+}> = ({
+  children,
+  backable = false,
+  regenable = false,
+  width,
+  minWidth,
+  height,
+}) => (
   <div
     style={{ background: deafultBackground }}
     className="absolute inset-0 flex w-fit min-w-full h-fit min-h-full items-center justify-center"

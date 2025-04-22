@@ -57,7 +57,13 @@ const Statistics: React.FC<StatisticsProps> = ({
 
       <div className="flex flex-col gap-3">
         <div className="font-inter text-white text-base">Модификаторы</div>
-        <PictureList pictures={modificators.flatMap((value) => ({image: value.picture, rounding: 9999}))} size={40} />
+        <PictureList
+          pictures={modificators.flatMap((value) => ({
+            image: value.picture,
+            rounding: 9999,
+          }))}
+          size={40}
+        />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -65,13 +71,18 @@ const Statistics: React.FC<StatisticsProps> = ({
         <div className="flex gap-2">
           <Labeled label="Аналитики">
             <PictureListStacked
-              stackedPictures={employees.flatMap((value) => ({image: value.picture, rounding: 9999}))}
+              stackedPictures={employees.flatMap((value) => ({
+                image: value.picture,
+                rounding: 9999,
+              }))}
               size={30}
             />
           </Labeled>
           <Labeled label="Разработчики">
             <PictureListStacked
-              stackedPictures={employees.flatMap((value) => ({image: value.picture, rounding: 9999})).slice(1)}
+              stackedPictures={employees
+                .flatMap((value) => ({ image: value.picture, rounding: 9999 }))
+                .slice(1)}
               size={30}
             />
           </Labeled>
@@ -83,7 +94,10 @@ const Statistics: React.FC<StatisticsProps> = ({
         <div className="flex gap-2">
           <Labeled label="Офис">
             <PictureListStacked
-              stackedPictures={actives.flatMap((value) => ({image: value.picture, rounding: 9999}))}
+              stackedPictures={actives.flatMap((value) => ({
+                image: value.picture,
+                rounding: 9999,
+              }))}
               size={30}
             />
           </Labeled>

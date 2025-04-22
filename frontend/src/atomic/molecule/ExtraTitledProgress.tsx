@@ -13,12 +13,18 @@ const ExtraTitledProgress: React.FC<ExtraTitledProgressProps> = ({
   changeColor,
 }) => (
   <div className="flex flex-col gap-2">
-    <div style={{ color: Color[textColor] }} className="font-inter flex flex-row justify-between text-sm">
+    <div
+      style={{ color: Color[textColor] }}
+      className="font-inter flex flex-row justify-between text-sm"
+    >
       <div className="">{startTitle}</div>
       <div className="">{endTitle}</div>
     </div>
     <Progress {...{ current, end, color, changeColor }} />
-    <div style={{ color: Color[textColor] }} className="font-inter text-center text-sm">
+    <div
+      style={{ color: Color[textColor] }}
+      className="font-inter text-center text-sm"
+    >
       {title}
     </div>
   </div>

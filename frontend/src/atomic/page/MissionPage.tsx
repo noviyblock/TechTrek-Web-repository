@@ -1,8 +1,8 @@
 import ChoosableTextList from "../molecule/ChoosableTextList";
 import SingleElementLayoutTemplate from "../template/SingleElementLayout";
-import {choosableList} from "../../shared/constants"
+import { choosableList } from "../../shared/constants";
 
-const MissionPage = () => (
+const MissionPage: React.FC = () => (
   <SingleElementLayoutTemplate
     backable={true}
     regenable={true}
@@ -11,7 +11,9 @@ const MissionPage = () => (
   >
     <div className="flex flex-col px-20 p-8 gap-14 ">
       <div className="text-white font-inter text-center">
-        Отлично! Вы вбрали сферу “Fintech”.<br/>Теперь выберите ваши цель и миссию
+        Отлично! Вы вбрали сферу “Fintech”.
+        <br />
+        Теперь выберите ваши цель и миссию
       </div>
       <ChoosableTextList choosableList={choosableList} />
     </div>

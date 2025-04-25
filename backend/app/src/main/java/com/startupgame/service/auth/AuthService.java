@@ -1,5 +1,6 @@
 package com.startupgame.service.auth;
 
+import com.startupgame.dto.auth.AccessTokenResponse;
 import com.startupgame.dto.auth.AuthResponse;
 import com.startupgame.dto.auth.LoginRequest;
 import com.startupgame.dto.auth.RegisterRequest;
@@ -9,6 +10,7 @@ import com.startupgame.exception.UserAlreadyExistsException;
 import com.startupgame.repository.auth.RefreshTokenRepository;
 import com.startupgame.repository.user.UserRepository;
 import com.startupgame.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,7 +102,7 @@ public class AuthService {
      * @return новый access токен (JWT) для авторизации пользователя
      * @throws RuntimeException если токен не найден, невалиден или просрочен
      */
-    public String refreshAccessToken(String refreshToken) {
+    public AccessTokenResponse refreshAccessToken(String refreshToken) {
         RefreshToken entity = refreshTokenRepository.findByTokenValue(refreshToken)
                 .orElseThrow(() -> {
                     log.warn("Refresh token not found in the database");
@@ -115,8 +117,8 @@ public class AuthService {
             refreshTokenRepository.delete(entity);
             throw new RuntimeException("Refresh token is invalid or expired");
         }
-
-        return jwtUtil.generateAccessToken(userDetails);
+        String newAccessToken = jwtUtil.generateAccessToken(userDetails);
+        return new AccessTokenResponse(newAccessToken);
     }
 
 
@@ -135,6 +137,7 @@ public class AuthService {
      * @return {@link AuthResponse} с access и refresh токенами
      * @throws RuntimeException если пользователь не найден в базе после успешной аутентификации
      */
+    @Transactional
     public AuthResponse authenticate(LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())

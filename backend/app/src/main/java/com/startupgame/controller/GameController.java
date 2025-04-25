@@ -1,19 +1,12 @@
 package com.startupgame.controller;
 
-import com.startupgame.dto.game.GameStateDTO;
-import com.startupgame.dto.game.SphereDTO;
+import com.startupgame.dto.game.*;
 import com.startupgame.service.game.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.startupgame.dto.game.StartGameRequest;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,13 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GameController {
 
-
     private final GameService gameService;
 
-    @GetMapping("/getThemes")
+    @GetMapping("/spheres")
     public ResponseEntity<List<SphereDTO>> getThemes() {
-        List<SphereDTO> themes = gameService.getThemes();
-        return ResponseEntity.ok(themes);
+        List<SphereDTO> spheres = gameService.getSpheres();
+        return ResponseEntity.ok(spheres);
     }
 
     @PostMapping("/start")
@@ -38,5 +30,22 @@ public class GameController {
                 request.getCompanyName(),
                 authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @GetMapping("/{gameId}/state")
+    public GameStateDTO getState(@PathVariable Long gameId) {
+        return gameService.getCurrentState(gameId);
+    }
+
+    @GetMapping("/{gameId}/modifiers")
+    public ResponseEntity<List<ModifierResponse>> getModifiers(@PathVariable Long gameId) {
+        List<ModifierResponse> modifierResponses = gameService.getAllModifiers(gameId);
+        return ResponseEntity.ok(modifierResponses);
+    }
+
+    @PostMapping("/{gameId}/modifiers")
+    public ResponseEntity<PurchaseResponse> purchaseModifier(@PathVariable Long gameId, @RequestBody PurchaseRequest request) {
+        PurchaseResponse resp = gameService.purchaseModifier(gameId, request.getModifierId());
+        return ResponseEntity.ok(resp);
     }
 }

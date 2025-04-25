@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
+
 import java.util.Map;
 
 @RestControllerAdvice
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> generic(Exception ex) {
         return Map.of("error", "Unexpected server error");
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleInsufficientFunds(InsufficientFundsException ex) {
+        return Map.of("error", ex.getMessage());
     }
 }
 

@@ -18,11 +18,12 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from typing import List
+import random
 
 import torch
 from transformers import pipeline, Pipeline
 
-from src.models import SYSTEM_PROMPT_BASE, EvaluateDecisionRequest
+from src.models import SYSTEM_PROMPT_BASE, EvaluateDecisionRequest, GameState, CrisisResponse
 
 logger = logging.getLogger("services.llm")
 
@@ -106,3 +107,49 @@ def evaluate_decision(req: EvaluateDecisionRequest) -> float:
     score = _yes_probability(prompt, pipe)
     logger.info("P(Yes)=%.3f for game %s", score, req.game_id)
     return score
+
+# ---------------------------------------------------------------------------
+# Public: generate crisis / opportunity
+# ---------------------------------------------------------------------------
+
+def _staff_summary(state: GameState) -> str:
+    dev_levels = {"junior": 0, "middle": 0, "senior": 0}
+    c_levels: List[str] = []
+    for s in state.staff:
+        if s.role.value in ("CEO", "CTO", "CMO"):
+            c_levels.append(s.role.value)
+        elif s.role.value == "Dev" and s.level:
+            dev_levels[s.level.value] += 1
+    return (
+        f"J={dev_levels['junior']} M={dev_levels['middle']} S={dev_levels['senior']} | "
+        f"C={','.join(c_levels) if c_levels else '-'}"
+    )
+
+
+def generate_crisis(state: GameState) -> CrisisResponse:
+    """Сгенерировать текст кризисной ситуации и danger_level (1‑3)."""
+    pipe = _get_generator()
+    res = state.resources
+    summary = (
+        f"$={res.money}, TECH={res.tech}, PROD={res.product}, MOT={res.motivation} | "
+        f"{_staff_summary(state)}"
+    )
+
+    prompt = (
+        "Ты — GM игры о стартапе. Придумай кризисную ситуацию или возможность "
+        "(2–3 предложения, связный текст) для стартапа на стадии "
+        f"{state.stage}.\n\nКонтекст стартапа: {summary}\n\nОписание:"
+    )
+
+    description = (
+        pipe(prompt, max_new_tokens=120, do_sample=True, temperature=0.9)[0]["generated_text"].split("Описание:")[-1].strip()
+    )
+
+    return CrisisResponse(
+        title="",
+        description=description,
+        danger_level=random.randint(1, 3),
+        recommended_roles=[],
+        forbidden_roles=[],
+        resource_targets=[],
+    )

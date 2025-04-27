@@ -1,0 +1,31 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: load-spheres-001
+      author: Nick Menshikov
+      labels: initial-data
+      changes:
+        - loadData:
+            file: classpath:db/changelog/data/spheres.csv
+            tableName: sphere
+            encoding: UTF-8
+            separator: ","
+      rollback:
+        - delete:
+            tableName: sphere
+            where: "id in (1,2,3)"
+
+  - changeSet:
+      id: load-missions-001
+      author: Nick Menshikov
+      labels: initial-data
+      changes:
+        - loadData:
+            file: classpath:db/changelog/data/missions.csv
+            tableName: mission
+            encoding: UTF-8
+            separator: ","
+      rollback:
+        - delete:
+            tableName: mission
+            where: "id in (1,2,3,4,5,6,7,8,9,10,11,12,13)"

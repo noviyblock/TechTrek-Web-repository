@@ -25,7 +25,6 @@ public class GameController {
 
     @PostMapping("/start")
     public ResponseEntity<GameStateDTO> startGame(@RequestBody StartGameRequest request, Authentication authentication) {
-        String username = authentication.getName();
         GameStateDTO dto = gameService.startGame(request.getMissionId(),
                 request.getCompanyName(),
                 authentication.getName());
@@ -47,5 +46,20 @@ public class GameController {
     public ResponseEntity<PurchaseResponse> purchaseModifier(@PathVariable Long gameId, @RequestBody PurchaseRequest request) {
         PurchaseResponse resp = gameService.purchaseModifier(gameId, request.getModifierId());
         return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/{gameId}/evaluate-decision")
+    public ResponseEntity<EvaluateDecisionResponse> evaluateDecision(
+            @PathVariable Long gameId,
+            @RequestBody DecisionRequest req
+    ) {
+        EvaluateDecisionResponse resp = gameService.evaluateDecision(gameId, req);
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/{gameId}/roll")
+    public ResponseEntity<RollResponse> rollDice(@PathVariable Long gameId) {
+        RollResponse roll = gameService.rollDice(gameId);
+        return ResponseEntity.ok(roll);
     }
 }

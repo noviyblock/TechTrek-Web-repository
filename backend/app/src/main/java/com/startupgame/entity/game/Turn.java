@@ -37,4 +37,6 @@ public class Turn {
     private Integer stage;
 
     private Integer turnNumber;
+
+    private Double score;
 }

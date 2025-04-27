@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "game")
@@ -49,6 +50,8 @@ public class Game {
             inverseJoinColumns = @JoinColumn(name = "modifier_id")
     )
     private Set<Modifier> modifiers = new HashSet<>();
+
+    private UUID mlGameId;
 
     //TODO override method toString
 }

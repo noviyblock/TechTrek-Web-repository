@@ -2,5 +2,9 @@ package com.startupgame.entity.game;
 
 public enum ModifierType {
     C_LEVEL,
-    OFFICE
+    OFFICE,
+    JUNIOR,
+    MIDDLE,
+    SENIOR,
+    ASSET
 }

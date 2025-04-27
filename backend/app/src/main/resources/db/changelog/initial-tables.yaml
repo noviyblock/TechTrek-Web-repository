@@ -146,6 +146,9 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: fk_game_team
                     references: team(id)
+              - column:
+                  name: ml_game_id
+                  type: uuid
 
 
   - changeSet:
@@ -282,6 +285,9 @@ databaseChangeLog:
                 - column:
                     name: turn_number
                     type: integer
+                - column:
+                    name: score
+                    type: double
 
   - changeSet:
       id: create-table-presentation
@@ -342,31 +348,6 @@ databaseChangeLog:
                   type: double
 
   - changeSet:
-      id: insert-spheres
-      author: Nick Menshikov
-      changes:
-        - insert:
-            tableName: sphere
-            columns:
-              - column:
-                  name: name
-                  value: "IT"
-
-  - changeSet:
-      id: insert-missions
-      author: Nick Menshikov
-      changes:
-        - insert:
-            tableName: mission
-            columns:
-              - column:
-                  name: name
-                  value: "Build a Website"
-              - column:
-                  name: sphere_id
-                  value: 1
-
-  - changeSet:
       id: create-table-modifiers
       author: Nick Menshikov
       changes:
@@ -401,6 +382,9 @@ databaseChangeLog:
         - createTable:
             tableName: game_modifiers
             columns:
+              - column:
+                  name: id
+                  type: bigserial
               - column:
                   name: game_id
                   type: bigint

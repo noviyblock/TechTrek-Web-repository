@@ -1,9 +1,11 @@
 package com.startupgame.service.game;
 
-import com.startupgame.dto.game.GameStateDTO;
-import com.startupgame.dto.game.ModifierResponse;
-import com.startupgame.dto.game.PurchaseResponse;
-import com.startupgame.dto.game.SphereDTO;
+import com.startupgame.client.MLApiClient;
+import com.startupgame.dto.game.*;
+import com.startupgame.dto.ml.EvaluateDecisionRequest;
+import com.startupgame.dto.ml.EvaluateDecisionResult;
+import com.startupgame.dto.ml.NewGameRequest;
+import com.startupgame.dto.ml.NewGameResponse;
 import com.startupgame.entity.game.*;
 import com.startupgame.entity.user.User;
 import com.startupgame.exception.InsufficientFundsException;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +36,9 @@ public class GameService {
     private final SuperEmployeeRepository superEmployeeRepository;
     private final ModifierRepository modifierRepository;
     private final GameModifierRepository gameModifierRepository;
+    private final MLApiClient mlApiClient;
+    private final GameModifierService gameModifierService;
+    private final Random random = new Random();
 
     public List<SphereDTO> getSpheres() {
         List<Sphere> themes = themeRepository.findAll();
@@ -64,6 +71,13 @@ public class GameService {
      */
     @Transactional
     public GameStateDTO startGame(Long missionId, String companyName, String username) {
+        NewGameRequest ngReq = new NewGameRequest();
+        ngReq.setMoney(100000L);
+        ngReq.setTechnicReadiness(0);
+        ngReq.setProductReadiness(0);
+        ngReq.setMotivation(50);
+        NewGameResponse ngResp = mlApiClient.createGame(ngReq);
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         Mission mission = missionRepository.findById(missionId)
@@ -91,7 +105,10 @@ public class GameService {
                 .team(team)
                 .startTime(LocalDateTime.now())
                 .endTime(null)
+                .mlGameId(ngResp.getGame_id())
                 .build());
+
+        gameModifierService.initializeDefaultModifiersForGame(game);
 
         Turn firstTurn = turnRepository.save(Turn.builder()
                 .game(game)
@@ -198,7 +215,7 @@ public class GameService {
 
         resources.setMoney(resources.getMoney() - cost);
         resourcesRepository.save(resources);
-
+        //TODO we can buy many times only developers
         GameModifier item = new GameModifier(game, modifier);
         gameModifierRepository.save(item);
 
@@ -212,6 +229,80 @@ public class GameService {
                 modifierId,
                 resources.getMoney(),
                 owned
+        );
+    }
+
+    public EvaluateDecisionResponse evaluateDecision(Long gameId, DecisionRequest req) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
+        UUID mlUuid = game.getMlGameId();
+        Turn currentTurn = turnRepository.findTopByGameIdOrderByTurnNumberDesc(gameId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No turns found for game id=" + gameId));
+        Resources resources = resourcesRepository.findById(currentTurn.getResources().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Resources not found"));
+        Team team = teamRepository.findById(game.getTeam().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
+        List<SuperEmployee> cLevels = superEmployeeRepository.findByTeamId(team.getId());
+
+        EvaluateDecisionRequest mlRequest = new EvaluateDecisionRequest(
+                mlUuid.toString(),
+                resources.getMoney(),
+                resources.getTechnicReadiness(),
+                resources.getProductReadiness(),
+                resources.getMotivation(),
+                team.getJuniorAmount(),
+                team.getMiddleAmount(),
+                team.getSeniorAmount(),
+                cLevels.stream().map(SuperEmployee::getName).collect(Collectors.toList()),
+                req.getDecision()
+        );
+        EvaluateDecisionResult mlResp = mlApiClient.evaluateDecision(mlRequest);
+
+        double score = mlResp.getQuality_score();
+        int motivationDelta, techReadinessDelta, productReadinessDelta;
+        double moneyDelta;
+        if (score >= 0.8) {
+            motivationDelta = 15;
+            techReadinessDelta = 10;
+            productReadinessDelta = 8;
+            moneyDelta = 20000;
+        } else if (score >= 0.6) {
+            motivationDelta = 10;
+            techReadinessDelta = 7;
+            productReadinessDelta = 5;
+            moneyDelta = 10000;
+        } else if (score >= 0.4) {
+            motivationDelta = 0;
+            techReadinessDelta = 0;
+            productReadinessDelta = 0;
+            moneyDelta = 0;
+        } else if (score >= 0.2) {
+            motivationDelta = -5;
+            techReadinessDelta = -3;
+            productReadinessDelta = -2;
+            moneyDelta = -10000;
+        } else {
+            motivationDelta = -10;
+            techReadinessDelta = -5;
+            productReadinessDelta = -4;
+            moneyDelta = -20000;
+        }
+
+        resources.setMotivation(resources.getMotivation() + motivationDelta);
+        resources.setTechnicReadiness(resources.getTechnicReadiness() + techReadinessDelta);
+        resources.setProductReadiness(resources.getProductReadiness() + productReadinessDelta);
+        resources.setMoney((long) (resources.getMoney() + moneyDelta));
+
+        resourcesRepository.save(resources);
+
+        return new EvaluateDecisionResponse(
+                motivationDelta, resources.getMotivation(),
+                techReadinessDelta, resources.getTechnicReadiness(),
+                productReadinessDelta, resources.getProductReadiness(),
+                moneyDelta, resources.getMoney(),
+                mlResp.getText_to_player(),
+                score
         );
     }
 
@@ -239,7 +330,24 @@ public class GameService {
                 .situationText(turn.getSituation())
                 .missionId(game.getMission().getId())
                 .superEmployees(superEmployeeNames)
-                .numberOfOffices(resources.getNumberOfOffices())
                 .build();
+    }
+
+    public RollResponse rollDice(Long gameId) {
+        gameRepository.findById(gameId)
+                .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
+
+        int d1 = random.nextInt(6) + 1;
+        int d2 = random.nextInt(6) + 1;
+        int total = d1 + d2;
+
+        String zone;
+        if (total <= 4) zone = "critical_fail";
+        else if (total <= 6) zone = "fail";
+        else if (total <= 9) zone = "neutral";
+        else if (total <= 11) zone = "success";
+        else zone = "critical_success";
+
+        return new RollResponse(total, zone);
     }
 }

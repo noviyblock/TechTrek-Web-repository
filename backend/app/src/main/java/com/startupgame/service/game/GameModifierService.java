@@ -38,7 +38,8 @@ public class GameModifierService {
             GameModifier gameModifier = GameModifier.builder()
                     .game(game)
                     .modifier(modifier)
-                    .usageCount(quantityIssued)
+                    .usageCount(0)
+                    .quantity(quantityIssued)
                     .active(true)
                     .build();
 

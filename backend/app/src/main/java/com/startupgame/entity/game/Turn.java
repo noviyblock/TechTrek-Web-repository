@@ -28,6 +28,9 @@ public class Turn {
     @Column
     private String situation;
 
+    @Column
+    private String answer;
+
     private Integer diceNumber;
 
     @ManyToOne

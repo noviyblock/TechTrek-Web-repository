@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../../public/fonts/Inter-Regular.woff2') format('woff2-variations');
+  }
+  
+@font-face {
+    font-family: 'Inter Fallback';
+    src: local('sans-serif');
+}

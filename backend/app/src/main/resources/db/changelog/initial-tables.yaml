@@ -405,3 +405,6 @@ databaseChangeLog:
               - column:
                   name: active
                   type: boolean
+              - column:
+                  name: quantity
+                  type: integer

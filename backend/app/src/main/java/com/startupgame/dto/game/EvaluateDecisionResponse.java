@@ -16,4 +16,5 @@ public class EvaluateDecisionResponse {
     private double newMoney;
     private String textToPlayer;
     private double qualityScore;
+    private RollResponse roll;
 }

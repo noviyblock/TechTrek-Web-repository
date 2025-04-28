@@ -57,9 +57,9 @@ public class GameController {
         return ResponseEntity.ok(resp);
     }
 
-    @GetMapping("/{gameId}/roll")
-    public ResponseEntity<RollResponse> rollDice(@PathVariable Long gameId) {
-        RollResponse roll = gameService.rollDice(gameId);
-        return ResponseEntity.ok(roll);
-    }
+//    @GetMapping("/{gameId}/roll")
+//    public ResponseEntity<RollResponse> rollDice(@PathVariable Long gameId) {
+//        RollResponse roll = gameService.rollDice(gameId);
+//        return ResponseEntity.ok(roll);
+//    }
 }

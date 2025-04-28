@@ -14,4 +14,5 @@ public class PurchaseResponse {
     private Long modifierId;
     private long remainingMoney;
     private List<String> ownedModifiers;
+    private Integer quantity;
 }

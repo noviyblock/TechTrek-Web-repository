@@ -35,4 +35,6 @@ public class GameModifier {
     private Integer usageCount = 0;
 
     private Boolean active = true;
+
+    private Integer quantity;
 }

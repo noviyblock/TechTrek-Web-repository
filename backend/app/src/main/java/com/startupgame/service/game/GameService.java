@@ -2,10 +2,7 @@ package com.startupgame.service.game;
 
 import com.startupgame.client.MLApiClient;
 import com.startupgame.dto.game.*;
-import com.startupgame.dto.ml.EvaluateDecisionRequest;
-import com.startupgame.dto.ml.EvaluateDecisionResult;
-import com.startupgame.dto.ml.NewGameRequest;
-import com.startupgame.dto.ml.NewGameResponse;
+import com.startupgame.dto.ml.*;
 import com.startupgame.entity.game.*;
 import com.startupgame.entity.user.User;
 import com.startupgame.exception.InsufficientFundsException;
@@ -204,7 +201,19 @@ public class GameService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "No turns found for game id=" + gameId));
 
+        GameModifier existing = gameModifierRepository.findByGameIdAndModifierId(gameId, modifierId)
+                .orElse(null);
+
         Resources resources = currentTurn.getResources();
+
+        boolean isDeveloper = modifier.getType() == ModifierType.JUNIOR
+                || modifier.getType() == ModifierType.MIDDLE
+                || modifier.getType() == ModifierType.SENIOR;
+
+
+        if (existing != null && !isDeveloper) {
+            throw new IllegalStateException("Modifier of type " + modifier.getType() + " can only be purchased once");
+        }
 
         Long cost = modifier.getPurchaseCost();
         if (resources.getMoney() < cost) {
@@ -215,9 +224,16 @@ public class GameService {
 
         resources.setMoney(resources.getMoney() - cost);
         resourcesRepository.save(resources);
-        //TODO we can buy many times only developers
-        GameModifier item = new GameModifier(game, modifier);
-        gameModifierRepository.save(item);
+
+        GameModifier savedModifier;
+        if (existing == null) {
+            savedModifier = new GameModifier(game, modifier);
+            savedModifier.setQuantity(1);
+        } else {
+            existing.setQuantity(existing.getQuantity() + 1);
+            savedModifier = existing;
+        }
+        gameModifierRepository.save(savedModifier);
 
         List<String> owned = gameModifierRepository.findByGameId(gameId)
                 .stream()
@@ -228,11 +244,13 @@ public class GameService {
                 gameId,
                 modifierId,
                 resources.getMoney(),
-                owned
+                owned,
+                savedModifier.getQuantity()
         );
     }
 
     public EvaluateDecisionResponse evaluateDecision(Long gameId, DecisionRequest req) {
+        //TODO REFACTOR THIS METHOD!!!
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
         UUID mlUuid = game.getMlGameId();
@@ -257,9 +275,9 @@ public class GameService {
                 cLevels.stream().map(SuperEmployee::getName).collect(Collectors.toList()),
                 req.getDecision()
         );
-        EvaluateDecisionResult mlResp = mlApiClient.evaluateDecision(mlRequest);
+        EvaluateDecisionResult mlResponse = mlApiClient.evaluateDecision(mlRequest);
 
-        double score = mlResp.getQuality_score();
+        double score = mlResponse.getQuality_score();
         int motivationDelta, techReadinessDelta, productReadinessDelta;
         double moneyDelta;
         if (score >= 0.8) {
@@ -288,21 +306,56 @@ public class GameService {
             productReadinessDelta = -4;
             moneyDelta = -20000;
         }
+        RollResponse rollResponse = rollDice(gameId);
+        int diceTotal = rollResponse.getDiceTotal();
+        double multiplier;
+        if (diceTotal <= 4) {
+            multiplier = 0.5;
+        } else if (diceTotal <= 6) {
+            multiplier = 0.8;
+        } else if (diceTotal <= 9) {
+            multiplier = 1.0;
+        } else if (diceTotal <= 11) {
+            multiplier = 1.2;
+        } else {
+            multiplier = 1.5;
+        }
 
-        resources.setMotivation(resources.getMotivation() + motivationDelta);
-        resources.setTechnicReadiness(resources.getTechnicReadiness() + techReadinessDelta);
-        resources.setProductReadiness(resources.getProductReadiness() + productReadinessDelta);
-        resources.setMoney((long) (resources.getMoney() + moneyDelta));
+        resources.setMotivation((int) Math.round((resources.getMotivation() + motivationDelta) * multiplier));
+        resources.setTechnicReadiness((int) Math.round((resources.getTechnicReadiness() + techReadinessDelta) * multiplier));
+        resources.setProductReadiness((int) Math.round((resources.getProductReadiness() + productReadinessDelta) * multiplier));
+        resources.setMoney(Math.round((resources.getMoney() + moneyDelta) * multiplier));
 
         resourcesRepository.save(resources);
+
+        Turn next = Turn.builder()
+                .game(currentTurn.getGame())
+                .turnNumber(currentTurn.getTurnNumber() + 1)
+                .stage(currentTurn.getStage())
+                .resources(resources)
+                .situation(req.getDecision())
+                .score(mlResponse.getQuality_score())
+                .diceNumber(diceTotal)
+                .build();
+
+        turnRepository.save(next);
+
+        ResolveRequest resolveRequest = new ResolveRequest(
+                buildGameStateDTO(game, next, resources, new Team()), //TODO Team??
+                mlResponse,
+                diceTotal,
+                rollResponse.getZone()
+        );
+
+        mlApiClient.resolveRequest(resolveRequest);
 
         return new EvaluateDecisionResponse(
                 motivationDelta, resources.getMotivation(),
                 techReadinessDelta, resources.getTechnicReadiness(),
                 productReadinessDelta, resources.getProductReadiness(),
                 moneyDelta, resources.getMoney(),
-                mlResp.getText_to_player(),
-                score
+                mlResponse.getText_to_player(),
+                score, rollResponse
         );
     }
 

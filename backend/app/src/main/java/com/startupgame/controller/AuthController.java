@@ -1,9 +1,6 @@
 package com.startupgame.controller;
 
-import com.startupgame.dto.auth.AuthResponse;
-import com.startupgame.dto.auth.LoginRequest;
-import com.startupgame.dto.auth.RefreshTokenRequest;
-import com.startupgame.dto.auth.RegisterRequest;
+import com.startupgame.dto.auth.*;
 import com.startupgame.exception.BadCredentialsException;
 import com.startupgame.exception.UserAlreadyExistsException;
 import com.startupgame.service.auth.AuthService;
@@ -38,8 +35,8 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
         try {
-            String newAccessToken = authService.refreshAccessToken(request.getRefreshToken());
-            return ResponseEntity.ok(newAccessToken);
+            AccessTokenResponse accessTokenResponse = authService.refreshAccessToken(request.getRefreshToken());
+            return ResponseEntity.ok(accessTokenResponse);
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
         } catch (Exception e) {

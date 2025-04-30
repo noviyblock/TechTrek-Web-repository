@@ -10,6 +10,8 @@ servers:
 tags:
   - name: auth
     description: Аутентификация пользователя
+  - name: Game
+    description: Эндпоинты логики игры
 
 
 paths:
@@ -110,407 +112,184 @@ paths:
               schema:
                 type: string
                 example: "An unexpected error occurred"
-  
-            
-  
-  
-  /api/domains:
-    get:
-      summary: Список сфер для новой игры
-      description: Возвращает список доступных сфер стартапа (IT, FinTech и т.д.).
-      responses:
-        '200':
-          description: Список сфер
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Domain'
 
-
-  /api/goals:
-    get:
-      summary: Список целей по заданной сфере
-      description: Получает список целей и миссий для выбранной сферы (например, IT).
-      parameters:
-        - in: query
-          name: domain
-          schema:
-            type: string
-          required: true
-          description: Название (или ID) сферы.
-      responses:
-        '200':
-          description: Список целей
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Goal'
-
-
-  /api/game/init:
+  /game/start:
     post:
-      summary: Создание новой игровой сессии
-      description: |
-        Инициирует новую игру на основе выбранной сферы, цели и названия стартапа.
-        Возвращает ID сессии и стартовые данные (ресурсы, команда и т.д.).
+      tags:
+        - Game
+      summary: "Start a new game"
+      description: >
+        Запускает новую игру по заданному идентификатору миссии и имени компании.
+        Возвращает текущее состояние игры для аутентифицированного пользователя.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                domain:
-                  type: string
-                goal:
-                  type: string
-                startupName:
-                  type: string
+              $ref: '#/components/schemas/StartGameRequest'
       responses:
-        '200':
-          description: Успешная инициализация игры
+        '201':
+          description: "Игра успешно запущена"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  sessionId:
-                    type: string
-                  resources:
-                    $ref: '#/components/schemas/Resources'
-                  team:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Employee'
-
-
-
-  /api/game/start:
-    post:
-      summary: Начало (запуск) игры
-      description: Переводит игру в активное состояние.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                sessionId:
-                  type: string
-                  description: ID текущей игровой сессии
-      responses:
-        '200':
-          description: Успешный старт игры
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Например, "game_started"
-
-
-  /api/employees/available:
-    get:
-      summary: Список доступных сотрудников по роли
-      description: |
-        Возвращает список потенциальных кандидатов для найма, например, CTO.
-      parameters:
-        - in: query
-          name: role
-          schema:
-            type: string
-          required: false
-          description: Уточняющая роль, по которой хотим найти сотрудников (например, "CTO").
-      responses:
-        '200':
-          description: Список доступных сотрудников
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Employee'
-
-
-  /api/employees/hire:
-    post:
-      summary: Найм сотрудника
-      description: |
-        Проверяет бюджет, обновляет состав команды и возвращает результат найма.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                sessionId:
-                  type: string
-                employeeId:
-                  type: string
-      responses:
-        '200':
-          description: Подтверждение успешного найма
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    description: "hire_success"
+                $ref: '#/components/schemas/GameStateDTO'
         '400':
-          description: Ошибка при найме (например, недостаточно средств)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: "Error message"
-    
-  /api/crisis/active:
+          description: "Некорректный запрос (например, отсутствует missionId или companyName)"
+        '401':
+          description: "Пользователь не аутентифицирован"
+        '500':
+          description: "Внутренняя ошибка сервера"
+
+  /game/{gameId}/state:
     get:
-      summary: Получить информацию о текущем кризисе
-      description: |
-        Возвращает данные об активном (не завершённом) кризисном событии для текущей сессии. 
-        Если кризиса нет, может вернуться пустой объект или 404.
+      tags:
+        - Game
+      summary: "Get current game state"
+      description: >
+        Возвращает текущее состояние игры по её идентификатору для аутентифицированного пользователя.
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - in: query
-          name: sessionId
-          schema:
-            type: string
+        - name: gameId
+          in: path
+          description: "Уникальный идентификатор игры"
           required: true
-          description: ID игровой сессии
-      responses:
-        '200':
-          description: Данные о текущем кризисе
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CrisisEvent'
-        '404':
-          description: Кризис для данной сессии не найден / отсутствует
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-
-  /api/crisis/decision:
-    post:
-      summary: Выбрать способ решения кризиса
-      description: |
-        Игрок принимает решение, каким образом будет обрабатывать кризис:
-        - использовать C-level эксперта (если доступен),
-        - либо пытаться решить самостоятельно.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CrisisDecisionRequest'
-      responses:
-        '200':
-          description: Решение принято, возвращаем подтверждение и (опционально) обновлённые данные кризиса
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Decision accepted"
-                  updatedCrisis:
-                    $ref: '#/components/schemas/CrisisEvent'
-        '400':
-          description: Некорректный запрос (например, эксперт недоступен)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Кризис не найден для указанной сессии
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-
-  /api/crisis/solution:
-    post:
-      summary: Отправить решение (текст/голос) для анализа и завершения кризиса
-      description: |
-        Игрок вводит своё окончательное решение (текст или голос, который может быть преобразован в текст на клиенте),
-        после чего движок игры вызывает LLM-сервис для анализа, выполняет бросок 2d6 с модификаторами и сохраняет результат.
-        Возвращает итог (провал, частичный успех или успех) и обновлённые ресурсы.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CrisisSolutionRequest'
-      responses:
-        '200':
-          description: Возвращает результат разрешения кризиса и новые параметры состояния
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CrisisSolutionResponse'
-        '400':
-          description: Некорректные данные (например, нет активного кризиса)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Кризис не найден
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-                
-
-  /api/actions/available:
-    get:
-      summary: Список доступных действий для игрока
-      description: |
-        Возвращает перечень возможных действий, которые игрок может совершить в данный момент,
-        с учётом текущих ресурсов, состояния игры и т.д. (например, "Hire Employee", "Buy Asset", "Research").
-      parameters:
-        - in: query
-          name: sessionId
-          schema:
-            type: string
-          required: true
-          description: ID игровой сессии
-      responses:
-        '200':
-          description: Список доступных действий
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Action'
-        '404':
-          description: Сессия не найдена или другой контекст ошибки
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-
-  /api/assets:
-    get:
-      summary: Список доступных активов для покупки
-      description: |
-        Отдаёт данные об активах (их цену, эффект), которые игрок может приобрести с учётом текущего бюджета.
-      parameters:
-        - in: query
-          name: sessionId
-          schema:
-            type: string
-          required: true
-          description: ID игровой сессии
-        - in: query
-          name: budget
           schema:
             type: integer
-          required: false
-          description: Текущий бюджет (или передаётся серверу для фильтрации)
+            format: int64
       responses:
         '200':
-          description: Список активов
+          description: "Текущее состояние игры успешно получено"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameStateDTO'
+        '400':
+          description: "Некорректный идентификатор игры"
+        '401':
+          description: "Пользователь не аутентифицирован"
+        '404':
+          description: "Игра с указанным идентификатором не найдена"
+        '500':
+          description: "Внутренняя ошибка сервера"
+
+  /game/{gameId}/modifiers:
+    get:
+      tags:
+        - Game
+      summary: "Get game modifiers"
+      description: >
+        Возвращает список всех модификаторов (ModifierResponse) для указанной игры.
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: gameId
+          in: path
+          description: "Уникальный идентификатор игры"
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "Список модификаторов успешно получен"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Asset'
+                  $ref: '#/components/schemas/ModifierResponse'
+        '400':
+          description: "Некорректный идентификатор игры"
+        '401':
+          description: "Пользователь не аутентифицирован"
         '404':
-          description: Сессия не найдена (или активы не найдены)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: "Игра с указанным идентификатором не найдена"
+        '500':
+          description: "Внутренняя ошибка сервера"
 
-
-  /api/assets/buy:
+  /game/{gameId}/modifiers():
     post:
-      summary: Купить актив
-      description: |
-        Пытается приобрести указанный актив (assetId). Если бюджет достаточен, 
-        списывает средства и применяет эффекты; иначе возвращает ошибку.
+      tags:
+        - Game
+      summary: "Purchase a game modifier"
+      description: >
+        Приобретает указанный модификатор для игры, списывает его стоимость с бюджета и возвращает обновлённое состояние владения модификаторами.
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: gameId
+          in: path
+          description: "Уникальный идентификатор игры"
+          required: true
+          schema:
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BuyAssetRequest'
+              $ref: '#/components/schemas/PurchaseRequest'
       responses:
         '200':
-          description: Покупка успешна, возвращает подтверждение и обновлённые ресурсы
+          description: "Модификатор успешно приобретён"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Asset purchased successfully"
-                  updatedResources:
-                    $ref: '#/components/schemas/ResourceState'
-                  purchasedAsset:
-                    $ref: '#/components/schemas/Asset'
+                $ref: '#/components/schemas/PurchaseResponse'
         '400':
-          description: Недостаточно средств или другой контекст ошибки
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: "Некорректный запрос (например, отсутствует modifierId в теле)"
+        '401':
+          description: "Пользователь не аутентифицирован"
         '404':
-          description: Актив не найден / Сессия не найдена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-                
+          description: "Игра или модификатор с указанными идентификаторами не найдены"
+        '500':
+          description: "Внутренняя ошибка сервера"
 
-  /api/presentation/prepare:
-    get:
-      summary: Подготовка к презентации
-      description: |
-        Возвращает данные о предстоящей презентации: ее тип (MVP, финал, и т.д.), критерии оценки,
-        а также текущее состояние/метрики (если нужно).
+  /game/{gameId}/evaluate-decision:
+    post:
+      tags:
+        - Game
+      summary: "Evaluate a decision"
+      description: >
+        Оценивает принятое игроком решение, возвращает изменения состояния (мотивация, техническая готовность, бюджет и др.)
+        и текст ответа игроку.
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - in: query
-          name: sessionId
-          schema:
-            type: string
+        - name: gameId
+          in: path
+          description: "Уникальный идентификатор игры"
           required: true
-          description: "ID игровой сессии"
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
       responses:
         '200':
-          description: Информация о презентации
+          description: "Результаты оценки решения успешно возвращены"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PresentationInfo'
+                $ref: '#/components/schemas/EvaluateDecisionResponse'
+        '400':
+          description: "Некорректный запрос (например, отсутствует поле decision)"
+        '401':
+          description: "Пользователь не аутентифицирован"
         '404':
-          description: Сессия не найдена / нет презентации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: "Игра с указанным идентификатором не найдена"
+        '500':
+          description: "Внутренняя ошибка сервера"
+
 
 
   /api/presentation/analyze:
@@ -1000,3 +779,243 @@ components:
           type: string
           description: "Сообщение о результате"
           example: "Презентация успешно защищена. Финансирование увеличено."
+
+    StartGameRequest:
+      type: object
+      properties:
+        missionId:
+          type: integer
+          format: int64
+          description: "Идентификатор миссии, по которой запускается игра"
+        companyName:
+          type: string
+          description: "Название компании игрока"
+      required:
+        - missionId
+        - companyName
+    GameStateDTO:
+      type: object
+      properties:
+        gameId:
+          type: integer
+          format: int64
+          description: "Уникальный идентификатор игры"
+        companyName:
+          type: string
+          description: "Название компании"
+        stage:
+          type: integer
+          description: "Текущий этап игры"
+        turnNumber:
+          type: integer
+          description: "Номер текущего хода"
+        monthsPassed:
+          type: integer
+          description: "Количество прошедших месяцев"
+        missionId:
+          type: integer
+          format: int64
+          description: "Идентификатор миссии"
+        money:
+          type: integer
+          format: int64
+          description: "Текущий бюджет компании"
+        technicReadiness:
+          type: integer
+          description: "Техническая готовность"
+        productReadiness:
+          type: integer
+          description: "Готовность продукта"
+        motivation:
+          type: integer
+          description: "Уровень мотивации команды"
+        juniors:
+          type: integer
+          description: "Количество junior-разработчиков"
+        middles:
+          type: integer
+          description: "Количество middle-разработчиков"
+        seniors:
+          type: integer
+          description: "Количество senior-разработчиков"
+        superEmployees:
+          type: array
+          description: "Список имён ключевых сотрудников"
+          items:
+            type: string
+        situationText:
+          type: string
+          description: "Описание текущей игровой ситуации"
+      required:
+        - gameId
+        - companyName
+        - stage
+        - turnNumber
+        - monthsPassed
+        - missionId
+        - money
+        - technicReadiness
+        - productReadiness
+        - motivation
+        - juniors
+        - middles
+        - seniors
+        - superEmployees
+        - numberOfOffices
+        - situationText
+
+    ModifierResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: "Уникальный идентификатор модификатора"
+        name:
+          type: string
+          description: "Название модификатора"
+        type:
+          type: string
+          description: "Тип модификатора (значения из Enum ModifierType)"
+        purchaseCost:
+          type: integer
+          format: int64
+          description: "Стоимость покупки"
+        upkeepCost:
+          type: integer
+          format: int64
+          description: "Ежемесячные/периодические затраты на содержание"
+        stageAllowed:
+          type: integer
+          description: "Этап игры, на котором модификатор становится доступен"
+        owned:
+          type: boolean
+          description: "Флаг, указывающий, приобретён ли модификатор"
+      required:
+        - id
+        - name
+        - type
+        - purchaseCost
+        - upkeepCost
+        - stageAllowed
+        - owned
+
+    PurchaseRequest:
+      type: object
+      properties:
+        modifierId:
+          type: integer
+          format: int64
+          description: "Идентификатор модификатора для покупки"
+      required:
+        - modifierId
+
+    PurchaseResponse:
+      type: object
+      properties:
+        gameId:
+          type: integer
+          format: int64
+          description: "Идентификатор игры, в которой произведена покупка"
+        modifierId:
+          type: integer
+          format: int64
+          description: "Идентификатор приобретённого модификатора"
+        remainingMoney:
+          type: integer
+          format: int64
+          description: "Остаток денег после покупки"
+        ownedModifiers:
+          type: array
+          description: "Список имён или идентификаторов всех приобретённых модификаторов"
+          items:
+            type: string
+        quantity:
+          type: integer
+          description: "Количество единиц данного модификатора, которыми теперь владеет игрок"
+      required:
+        - gameId
+        - modifierId
+        - remainingMoney
+        - ownedModifiers
+        - quantity
+
+    DecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          description: "Выбранное игроком решение"
+      required:
+        - decision
+
+    EvaluateDecisionResponse:
+      type: object
+      properties:
+        motivationDelta:
+          type: integer
+          description: "Изменение мотивации"
+        newMotivation:
+          type: integer
+          description: "Новый уровень мотивации"
+        technicalDelta:
+          type: integer
+          description: "Изменение технической готовности"
+        newTechnicalReadiness:
+          type: integer
+          description: "Новая техническая готовность"
+        productDelta:
+          type: integer
+          description: "Изменение готовности продукта"
+        newProductReadiness:
+          type: integer
+          description: "Новая готовность продукта"
+        moneyDelta:
+          type: number
+          format: double
+          description: "Изменение бюджета"
+        newMoney:
+          type: number
+          format: double
+          description: "Новый бюджет"
+        textToPlayer:
+          type: string
+          description: "Текст ответа игроку"
+        qualityScore:
+          type: number
+          format: double
+          description: "Оценка качества принятого решения"
+        roll:
+          $ref: '#/components/schemas/RollResponse'
+      required:
+        - motivationDelta
+        - newMotivation
+        - technicalDelta
+        - newTechnicalReadiness
+        - productDelta
+        - newProductReadiness
+        - moneyDelta
+        - newMoney
+        - textToPlayer
+        - qualityScore
+        - roll
+
+    RollResponse:
+      type: object
+      properties:
+        diceTotal:
+          type: integer
+          description: "Сумма выпавших на кубиках очков"
+        zone:
+          type: string
+          description: "Зона результата броска"
+      required:
+        - diceTotal
+        - zone
+
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

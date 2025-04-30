@@ -28,6 +28,9 @@ public class Turn {
     @Column
     private String situation;
 
+    @Column
+    private String answer;
+
     private Integer diceNumber;
 
     @ManyToOne
@@ -37,4 +40,6 @@ public class Turn {
     private Integer stage;
 
     private Integer turnNumber;
+
+    private Double score;
 }

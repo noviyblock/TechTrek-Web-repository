@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: load-modifiers-001
+      author: Nick Menshikov
+      labels: initial-data
+      changes:
+        - loadData:
+            file: classpath:db/changelog/data/modifiers.csv
+            tableName: modifiers
+            encoding: UTF-8
+            separator: ","
+      rollback:
+        - delete:
+            tableName: modifiers
+            where: "id in (1,2,3,4,5,6,7,8,9,10)"

@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "game")
@@ -39,6 +42,16 @@ public class Game {
 
     @OneToOne
     private Team team;
+
+    @ManyToMany
+    @JoinTable(
+            name = "game_modifiers",
+            joinColumns = @JoinColumn(name = "game_id"),
+            inverseJoinColumns = @JoinColumn(name = "modifier_id")
+    )
+    private Set<Modifier> modifiers = new HashSet<>();
+
+    private UUID mlGameId;
 
     //TODO override method toString
 }

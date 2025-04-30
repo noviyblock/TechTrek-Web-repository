@@ -146,6 +146,9 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: fk_game_team
                     references: team(id)
+              - column:
+                  name: ml_game_id
+                  type: uuid
 
 
   - changeSet:
@@ -282,6 +285,9 @@ databaseChangeLog:
                 - column:
                     name: turn_number
                     type: integer
+                - column:
+                    name: score
+                    type: double
 
   - changeSet:
       id: create-table-presentation
@@ -342,26 +348,63 @@ databaseChangeLog:
                   type: double
 
   - changeSet:
-      id: insert-spheres
+      id: create-table-modifiers
       author: Nick Menshikov
       changes:
-        - insert:
-            tableName: sphere
+        - createTable:
+            tableName: modifiers
             columns:
               - column:
+                  name: id
+                  type: bigserial
+                  constraints:
+                    primaryKey: true
+              - column:
                   name: name
-                  value: "IT"
+                  type: varchar(255)
+              - column:
+                  name: type
+                  type: varchar(255)
+              - column:
+                  name: purchase_cost
+                  type: bigint
+              - column:
+                  name: upkeep_cost
+                  type: bigint
+              - column:
+                  name: stage_allowed
+                  type: integer
 
   - changeSet:
-      id: insert-missions
+      id: create-table-game-modifiers
       author: Nick Menshikov
       changes:
-        - insert:
-            tableName: mission
+        - createTable:
+            tableName: game_modifiers
             columns:
               - column:
-                  name: name
-                  value: "Build a Website"
+                  name: id
+                  type: bigserial
               - column:
-                  name: sphere_id
-                  value: 1
+                  name: game_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    foreignKeyName: fk_modifiers_game
+                    references: game(id)
+              - column:
+                  name: modifier_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    foreignKeyName: fk_modifiers
+                    references: modifiers(id)
+              - column:
+                  name: usage_count
+                  type: integer
+              - column:
+                  name: active
+                  type: boolean
+              - column:
+                  name: quantity
+                  type: integer

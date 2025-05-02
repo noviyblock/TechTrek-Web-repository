@@ -2,6 +2,7 @@ import ChoosableTextList from "../molecule/ChoosableTextList";
 import SingleElementLayoutTemplate from "../template/SingleElementLayout";
 import { choosableList } from "../../shared/constants";
 
+
 const MissionPage: React.FC = () => (
   <SingleElementLayoutTemplate
     backable={true}

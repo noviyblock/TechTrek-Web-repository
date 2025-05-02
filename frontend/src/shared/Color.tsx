@@ -28,3 +28,4 @@ export const deafultBackground = "#010000";
 export const tooltipColor = "#949494";
 export const strokeColor = "#3C3C3C";
 export const defaultBlockColor = "#11181C";
+export const defaultBorderColor = "#A1A1A1";

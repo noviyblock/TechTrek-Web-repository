@@ -93,3 +93,7 @@ export interface StatisticsProps {
   employees: Employee[];
   actives: Active[];
 }
+
+export interface ContrainerListProps {
+  elements: React.ReactNode[];
+}

@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Active, Employee, Modificator } from "./GameTypes";
 import {
   CardButtonProps,
@@ -83,6 +84,8 @@ export const categories: CardButtonProps[] = [
     color: "Success",
   },
 ];
+
+export const backendURL = '';
 
 export const choosableList: ChoosableTextProps[] = [
   {
@@ -199,4 +202,37 @@ export const actives: Active[] = [
   {
     picture: Logo,
   },
+];
+
+export const elements: ReactNode[] = [
+  <div className="text-white font-inter">
+    <b>Целевая аудитория</b>
+    <ul className="">
+      <li>
+        <b>Миллениалы и Gen Z:</b> Техно-подкованные, хотят управлять деньгами
+        без сложностей.
+      </li>
+      <li>
+        <b>Фрилансеры:</b> Важен контроль финансов и планирование налогов.
+      </li>
+      <li>
+        <b>Молодые семьи:</b> Совместный учёт, накопления и оптимизация бюджета.
+      </li>
+      <li>
+        <b>Малый бизнес:</b> Учёт финансов, автоматизация, банки.
+      </li>
+      <li>
+        <b>Финграмотные:</b> Контроль денег, инвестиции, обучение.
+      </li>
+    </ul>
+  </div>,
+  <div className="text-white font-inter">
+    <ul className="">
+      <li>Удобное управление деньгами.</li>
+      <li>Автоматизация бюджета и расходов.</li>
+      <li>Накопление и инвестирование.</li>
+      <li>Интеграция с банками и сервисами.</li>
+      <li>Финансовое образование.</li>
+    </ul>
+  </div>,
 ];

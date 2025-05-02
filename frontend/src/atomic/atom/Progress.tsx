@@ -33,10 +33,10 @@ const Progress: React.FC<ProgressProps> = ({
   return (
     <div
       style={{ background: Color.Progress }}
-      className="w-full h-4 rounded-full overflow-hidde"
+      className="w-full h-4 rounded-full overflow-hidden"
     >
       <div
-        className={`h-full rounded-full overflow-hidde transition-all`}
+        className={`h-full rounded-full overflow-hidden transition-all`}
         style={{
           width: `${(current / end) * 100}%`,
           background: Color[currentColor],

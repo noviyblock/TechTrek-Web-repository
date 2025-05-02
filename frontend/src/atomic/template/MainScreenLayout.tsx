@@ -30,7 +30,7 @@ const MainScreenLayout: React.FC = () => (
         endTitle="30 мес."
       />
       <Statistics
-        techReadiness={30}
+        techReadiness={20}
         productReadiness={40}
         motivation={80}
         reputation={60}

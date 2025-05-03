@@ -363,7 +363,7 @@ databaseChangeLog:
                   name: name
                   type: varchar(255)
               - column:
-                  name: type
+                  name: modifierType
                   type: varchar(255)
               - column:
                   name: purchase_cost

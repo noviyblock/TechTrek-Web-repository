@@ -150,7 +150,7 @@ public class GameService {
                 .map(mod -> ModifierResponse.builder()
                         .id(mod.getId())
                         .name(mod.getName())
-                        .type(mod.getType())
+                        .type(mod.getModifierType())
                         .purchaseCost(mod.getPurchaseCost())
                         .upkeepCost(mod.getUpkeepCost())
                         .stageAllowed(mod.getStageAllowed())
@@ -205,17 +205,17 @@ public class GameService {
 
         Resources resources = currentTurn.getResources();
 
-        boolean isDeveloper = modifier.getType() == ModifierType.JUNIOR
-                || modifier.getType() == ModifierType.MIDDLE
-                || modifier.getType() == ModifierType.SENIOR;
+        boolean isDeveloper = modifier.getModifierType() == ModifierType.JUNIOR
+                || modifier.getModifierType() == ModifierType.MIDDLE
+                || modifier.getModifierType() == ModifierType.SENIOR;
 
 
         if (existing != null && !isDeveloper) {
-            throw new IllegalStateException("Modifier of type " + modifier.getType() + " can only be purchased once");
+            throw new IllegalStateException("Modifier of type " + modifier.getModifierType() + " can only be purchased once");
         }
 
         if (currentTurn.getStage() < modifier.getStageAllowed()) {
-            throw new IllegalStateException("Modifier of type " + modifier.getType() + " can only be purchased on stage " + modifier.getStageAllowed());
+            throw new IllegalStateException("Modifier of type " + modifier.getModifierType() + " can only be purchased on stage " + modifier.getStageAllowed());
         }
 
         Long cost = modifier.getPurchaseCost();

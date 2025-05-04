@@ -13,8 +13,9 @@ public class Modifier {
 
     private String name;
 
+    @Column(name = "modifier_type")
     @Enumerated(EnumType.STRING)
-    private ModifierType type;
+    private ModifierType modifierType;
 
     private Long purchaseCost;
     private Long upkeepCost;

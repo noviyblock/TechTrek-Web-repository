@@ -30,8 +30,9 @@ public class UserController {
                 .orElseThrow(() -> new IllegalStateException("User not found"));
         List<GameShortInfoDTO> games = gameRepository.findByUserId(user.getId()).stream()
                 .map(game -> new GameShortInfoDTO(
+                        game.getId(),
                         game.getMission().getSphere().getName(),
-                        83
+                        game.getScore()
                 ))
                 .collect(Collectors.toList());
 

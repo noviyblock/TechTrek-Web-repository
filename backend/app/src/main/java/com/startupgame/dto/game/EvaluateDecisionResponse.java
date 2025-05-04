@@ -6,15 +6,19 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class EvaluateDecisionResponse {
-    private int motivationDelta;
-    private int newMotivation;
-    private int technicalDelta;
-    private int newTechnicalReadiness;
-    private int productDelta;
-    private int newProductReadiness;
-    private double moneyDelta;
-    private double newMoney;
-    private String textToPlayer;
-    private double qualityScore;
-    private RollResponse roll;
+    private final int rawMotivationDelta;
+    private final int rawTechnicalReadinessDelta;
+    private final int rawProductReadinessDelta;
+    private final long rawMoneyDelta;
+    private final int scaledMotivationDelta;
+    private final int scaledTechnicalReadinessDelta;
+    private final int scaledProductReadinessDelta;
+    private final long scaledMoneyDelta;
+    private final int newMotivation;
+    private final int newTechnicalReadiness;
+    private final int newProductReadiness;
+    private final long newMoney;
+    private final String textToPlayer;
+    private final double qualityScore;
+    private final RollResponse roll;
 }

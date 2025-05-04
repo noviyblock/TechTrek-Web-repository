@@ -3,6 +3,7 @@ package com.startupgame.dto.game;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -26,6 +27,8 @@ public class GameStateDTO {
 
     private List<String> superEmployees;
     private String officeName;
+
+    private LocalDateTime endTime;
 
     private String situationText;
 }

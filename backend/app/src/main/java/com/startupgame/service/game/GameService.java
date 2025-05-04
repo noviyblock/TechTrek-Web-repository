@@ -13,7 +13,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -275,32 +277,49 @@ public class GameService {
     @Transactional
     public EvaluateDecisionResponse evaluateDecision(Long gameId, DecisionRequest decisionRequest) {
         GameContext gameContext = loadGameContext(gameId);
+        if (gameContext.getGame().getEndTime() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
+        }
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
-        ResourceDelta resourcesDelta = calculateDelta(mlResponse.getQuality_score());
+        ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
         RollWithMultiplier rollWithMultiplier = doRoll(gameId);
-        applyChanges(gameContext.getResources(), resourcesDelta, rollWithMultiplier.getMultiplier());
+        double multiplier = rollWithMultiplier.getMultiplier();
+        applyChanges(gameContext.getResources(), rawDelta, multiplier);
         createNextTurn(gameContext, decisionRequest.getDecision(), mlResponse, rollWithMultiplier.getRollResponse());
         //TODO POST on ml
-        return buildResponse(resourcesDelta, gameContext.getResources(), mlResponse, rollWithMultiplier.getRollResponse());
+        return buildResponse(rawDelta, gameContext.getResources(), mlResponse, rollWithMultiplier.getRollResponse(), multiplier);
+    }
+
+    @Transactional
+    public EvaluateDecisionResponse evaluatePresentation(Long gameId, DecisionRequest decisionRequest) {
+        GameContext gameContext = loadGameContext(gameId);
+        if (gameContext.getGame().getEndTime() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
+        }
+        EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
+        ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
+        applyChanges(gameContext.getResources(), rawDelta, 1.0);
+        return buildResponse(rawDelta, gameContext.getResources(), mlResponse, new RollResponse(0, "presentation"), 1.0);
     }
 
 
     private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources) {
-
         DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(game.getId());
-
-        Modifier office = gameModifierRepository.findActiveOffice(game.getId())
-                .orElse(null);
-
+        Modifier office = gameModifierRepository.findActiveOffice(game.getId()).orElse(null);
         List<String> cLevels = gameModifierRepository.findCLevelNames(game.getId());
 
-        assert office != null;
+        int tn = turn.getTurnNumber();
+        int s1 = Math.min(tn, 6);
+        int s2 = Math.min(Math.max(tn - 6, 0), 6);
+        int s3 = Math.min(Math.max(tn - 12, 0), 6);
+        int monthsPassed = s1 + s2 * 3 + s3 * 6;
+
         return GameStateDTO.builder()
                 .gameId(game.getId())
                 .companyName(game.getCompanyName())
                 .stage(turn.getStage())
-                .turnNumber(turn.getTurnNumber())
-                .monthsPassed(turn.getTurnNumber() * 6)
+                .turnNumber(tn)
+                .monthsPassed(monthsPassed)
                 .money(resources.getMoney())
                 .technicReadiness(resources.getTechnicReadiness())
                 .productReadiness(resources.getProductReadiness())
@@ -312,6 +331,7 @@ public class GameService {
                 .missionId(game.getMission().getId())
                 .superEmployees(cLevels)
                 .officeName(office.getName())
+                .endTime(game.getEndTime())
                 .build();
     }
 
@@ -351,16 +371,23 @@ public class GameService {
     }
 
     private EvaluateDecisionResult callMl(GameContext gameContext, String decision) {
+        DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(gameContext.getGame().getId());
+        List<String> cLevels = gameModifierRepository.findCLevelNames(gameContext.getGame().getId());
+
+        int juniors = Math.toIntExact(devCnt.juniors());
+        int middles = Math.toIntExact(devCnt.middles());
+        int seniors = Math.toIntExact(devCnt.seniors());
+
         EvaluateDecisionRequest req = new EvaluateDecisionRequest(
                 gameContext.getGame().getMlGameId().toString(),
                 gameContext.getResources().getMoney(),
                 gameContext.getResources().getTechnicReadiness(),
                 gameContext.getResources().getProductReadiness(),
                 gameContext.getResources().getMotivation(),
-                gameContext.getTeam().getJuniorAmount(),
-                gameContext.getTeam().getMiddleAmount(),
-                gameContext.getTeam().getSeniorAmount(),
-                gameContext.getSuperEmployees().stream().map(SuperEmployee::getName).collect(Collectors.toList()),
+                juniors,
+                middles,
+                seniors,
+                cLevels,
                 decision
         );
         return mlApiClient.evaluateDecision(req);
@@ -368,7 +395,13 @@ public class GameService {
 
     private void createNextTurn(GameContext gameContext, String decision, EvaluateDecisionResult mlResponse, RollResponse roll) {
         int nextNumber = gameContext.getTurn().getTurnNumber() + 1;
-        int nextStage = (nextNumber % 6 == 0) ? gameContext.getTurn().getStage() + 1 : gameContext.getTurn().getStage();
+        if (nextNumber > 18) {
+            return;
+        }
+        int currentStage = gameContext.getTurn().getStage();
+        int nextStage = (nextNumber % 6 == 0)
+                ? Math.min(currentStage + 1, 3)
+                : currentStage;
         turnRepository.save(Turn.builder()
                 .game(gameContext.getGame())
                 .turnNumber(nextNumber)
@@ -378,8 +411,11 @@ public class GameService {
                 .answer(decision)
                 .score(mlResponse.getQuality_score())
                 .diceNumber(roll.getDiceTotal())
-                .build()
-        );
+                .build());
+        if (nextNumber == 18) {
+            gameContext.getGame().setEndTime(LocalDateTime.now());
+            gameRepository.save(gameContext.getGame());
+        }
     }
 
     private RollWithMultiplier doRoll(Long gameId) {
@@ -387,11 +423,13 @@ public class GameService {
         int total = roll.getDiceTotal();
 
         double multiplier = switch (total) {
-            case 1, 2, 3, 4 -> 0.5;
-            case 5, 6 -> 0.8;
-            case 7, 8, 9 -> 1.0;
-            case 10, 11 -> 1.2;
-            default -> 1.5;
+            case 1 -> 0.70;
+            case 2, 3 -> 0.85;
+            case 4, 5 -> 0.95;
+            case 8, 9 -> 1.05;
+            case 10, 11 -> 1.15;
+            case 12 -> 1.30;
+            default -> 1.00;
         };
         return new RollWithMultiplier(roll, multiplier);
     }
@@ -421,14 +459,33 @@ public class GameService {
         resourcesRepository.save(resources);
     }
 
-    private EvaluateDecisionResponse buildResponse(ResourceDelta delta, Resources resources, EvaluateDecisionResult mlResponse, RollResponse roll) {
+    private EvaluateDecisionResponse buildResponse(ResourceDelta rawDelta, Resources resources, EvaluateDecisionResult mlResponse, RollResponse roll, double multiplier) {
+        ResourceDelta scaledDelta = createScaledDelta(rawDelta, multiplier);
         return new EvaluateDecisionResponse(
-                delta.getMotivation(), resources.getMotivation(),
-                delta.getTechnicalReadiness(), resources.getTechnicReadiness(),
-                delta.getProductReadiness(), resources.getProductReadiness(),
-                delta.getMoney(), resources.getMoney(),
+                rawDelta.getMotivation(),
+                rawDelta.getTechnicalReadiness(),
+                rawDelta.getProductReadiness(),
+                rawDelta.getMoney(),
+                scaledDelta.getMotivation(),
+                scaledDelta.getTechnicalReadiness(),
+                scaledDelta.getProductReadiness(),
+                scaledDelta.getMoney(),
+                resources.getMotivation(),
+                resources.getTechnicReadiness(),
+                resources.getProductReadiness(),
+                resources.getMoney(),
                 mlResponse.getText_to_player(),
-                mlResponse.getQuality_score(), roll
+                mlResponse.getQuality_score(),
+                roll
+        );
+    }
+
+    private ResourceDelta createScaledDelta(ResourceDelta rawDelta, double multiplier) {
+        return new ResourceDelta(
+                (int) Math.round(rawDelta.getMotivation() * multiplier),
+                (int) Math.round(rawDelta.getTechnicalReadiness() * multiplier),
+                (int) Math.round(rawDelta.getProductReadiness() * multiplier),
+                Math.round(rawDelta.getMoney() * multiplier)
         );
     }
 }

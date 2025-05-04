@@ -13,7 +13,7 @@ public class Modifier {
 
     private String name;
 
-    @Column(name = "type")
+    @Column(name = "modifier_type")
     @Enumerated(EnumType.STRING)
     private ModifierType modifierType;
 

@@ -1,4 +1,4 @@
 package com.startupgame.dto.game;
 
 
-public record DeveloperCounts(Integer juniors, Integer middles, Integer seniors){}
+public record DeveloperCounts(Long juniors, Long middles, Long seniors) { }

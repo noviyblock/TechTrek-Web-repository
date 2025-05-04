@@ -6,5 +6,5 @@ public enum ModifierType {
     JUNIOR,
     MIDDLE,
     SENIOR,
-    ASSET
+    ASSET,
 }

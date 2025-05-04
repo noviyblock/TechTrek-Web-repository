@@ -5,6 +5,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_URL: ${DB_URL}
       JWT_SECRET: ${JWT_SECRET}
+      ML_URL: ${ML_URL}
     build:
       context: ./backend
     ports:

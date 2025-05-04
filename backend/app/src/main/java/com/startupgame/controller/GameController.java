@@ -49,17 +49,13 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/evaluate-decision")
-    public ResponseEntity<EvaluateDecisionResponse> evaluateDecision(
-            @PathVariable Long gameId,
-            @RequestBody DecisionRequest req
-    ) {
+    public ResponseEntity<EvaluateDecisionResponse> evaluateDecision(@PathVariable Long gameId, @RequestBody DecisionRequest req) {
         EvaluateDecisionResponse resp = gameService.evaluateDecision(gameId, req);
         return ResponseEntity.ok(resp);
     }
 
-//    @GetMapping("/{gameId}/roll")
-//    public ResponseEntity<RollResponse> rollDice(@PathVariable Long gameId) {
-//        RollResponse roll = gameService.rollDice(gameId);
-//        return ResponseEntity.ok(roll);
-//    }
+    @PostMapping("/{gameId}/evaluate-presentation")
+    public EvaluateDecisionResponse evaluatePresentation(@PathVariable Long gameId, @RequestBody DecisionRequest decisionRequest) {
+        return gameService.evaluatePresentation(gameId, decisionRequest);
+    }
 }

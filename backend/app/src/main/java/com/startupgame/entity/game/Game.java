@@ -53,5 +53,7 @@ public class Game {
 
     private UUID mlGameId;
 
+    private Integer score;
+
     //TODO override method toString
 }

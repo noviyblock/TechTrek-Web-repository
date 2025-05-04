@@ -171,4 +171,8 @@ public class AuthService {
         }
         log.info("Access and refresh tokens generated and saved for user '{}'", user.getUsername());
     }
+
+    public void logout(String refreshToken) {
+        refreshTokenRepository.deleteByTokenValue(refreshToken);
+    }
 }

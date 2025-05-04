@@ -149,6 +149,9 @@ databaseChangeLog:
               - column:
                   name: ml_game_id
                   type: uuid
+              - column:
+                  name: score
+                  type: integer
 
 
   - changeSet:

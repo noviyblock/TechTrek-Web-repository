@@ -9,5 +9,5 @@ public class ResourceDelta {
     private int motivation;
     private int technicalReadiness;
     private int productReadiness;
-    private double money;
+    private long money;
 }

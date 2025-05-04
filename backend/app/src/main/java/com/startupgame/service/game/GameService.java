@@ -6,11 +6,13 @@ import com.startupgame.dto.ml.*;
 import com.startupgame.entity.game.*;
 import com.startupgame.entity.user.User;
 import com.startupgame.exception.InsufficientFundsException;
+import com.startupgame.exception.MlServiceUnavailableException;
 import com.startupgame.repository.game.*;
 import com.startupgame.repository.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GameService {
 
     private final SphereRepository themeRepository;
@@ -67,12 +70,20 @@ public class GameService {
      */
     @Transactional
     public GameStateDTO startGame(Long missionId, String companyName, String username) {
-        NewGameRequest ngReq = new NewGameRequest();
-        ngReq.setMoney(100000L);
-        ngReq.setTechnicReadiness(0);
-        ngReq.setProductReadiness(0);
-        ngReq.setMotivation(50);
-        NewGameResponse ngResp = mlApiClient.createGame(ngReq);
+        NewGameRequest newGameRequest = new NewGameRequest();
+        newGameRequest.setMoney(100000L);
+        newGameRequest.setTechnicReadiness(0);
+        newGameRequest.setProductReadiness(0);
+        newGameRequest.setMotivation(50);
+        NewGameResponse newGameResponse;
+        try {
+            newGameResponse = mlApiClient.createGame(newGameRequest);
+        } catch (Exception ex) {
+            log.error("ML service createGame failed for missionId={}, user='{}'", missionId, username, ex);
+            throw new MlServiceUnavailableException(
+                    "ML service createGame failed", ex
+            );
+        }
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -101,7 +112,7 @@ public class GameService {
                 .team(team)
                 .startTime(LocalDateTime.now())
                 .endTime(null)
-                .mlGameId(ngResp.getGame_id())
+                .mlGameId(newGameResponse.getGame_id())
                 .build());
 
         gameModifierService.initializeDefaultModifiersForGame(game);
@@ -114,7 +125,7 @@ public class GameService {
                 .situation("Начало игры")
                 .build());
 
-        return buildGameStateDTO(game, firstTurn, resources, team);
+        return buildGameStateDTO(game, firstTurn, resources);
     }
 
     @Transactional
@@ -132,11 +143,7 @@ public class GameService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Resources for turn %d not found", currentTurn.getTurnNumber())));
 
-        Team team = teamRepository.findById(game.getTeam().getId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Team for game id=%d not found", gameId)));
-
-        return buildGameStateDTO(game, currentTurn, currentResources, team);
+        return buildGameStateDTO(game, currentTurn, currentResources);
     }
 
     public List<ModifierResponse> getAllModifiers(Long gameId) {
@@ -206,8 +213,10 @@ public class GameService {
         Resources resources = currentTurn.getResources();
 
         boolean isDeveloper = modifier.getModifierType() == ModifierType.JUNIOR
-                || modifier.getModifierType() == ModifierType.MIDDLE
-                || modifier.getModifierType() == ModifierType.SENIOR;
+                              || modifier.getModifierType() == ModifierType.MIDDLE
+                              || modifier.getModifierType() == ModifierType.SENIOR;
+
+        boolean isOffice = modifier.getModifierType() == ModifierType.OFFICE;
 
 
         if (existing != null && !isDeveloper) {
@@ -227,6 +236,17 @@ public class GameService {
 
         resources.setMoney(resources.getMoney() - cost);
         resourcesRepository.save(resources);
+
+        if (isOffice) {
+            gameModifierRepository.findActiveOffice(gameId)
+                    .flatMap(oldMod ->
+                            gameModifierRepository.findByGameIdAndModifierId(gameId, oldMod.getId())
+                    )
+                    .ifPresent(oldGameMod -> {
+                        oldGameMod.setActive(false);
+                        gameModifierRepository.delete(oldGameMod);
+                    });
+        }
 
         GameModifier savedModifier;
         if (existing == null) {
@@ -265,13 +285,16 @@ public class GameService {
     }
 
 
-    private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources, Team team) {
-        List<SuperEmployee> superEmployees = superEmployeeRepository.findByTeamId(team.getId());
+    private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources) {
 
-        List<String> superEmployeeNames = superEmployees.stream()
-                .map(SuperEmployee::getName)
-                .toList();
+        DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(game.getId());
 
+        Modifier office = gameModifierRepository.findActiveOffice(game.getId())
+                .orElse(null);
+
+        List<String> cLevels = gameModifierRepository.findCLevelNames(game.getId());
+
+        assert office != null;
         return GameStateDTO.builder()
                 .gameId(game.getId())
                 .companyName(game.getCompanyName())
@@ -282,12 +305,13 @@ public class GameService {
                 .technicReadiness(resources.getTechnicReadiness())
                 .productReadiness(resources.getProductReadiness())
                 .motivation(resources.getMotivation())
-                .juniors(team.getJuniorAmount())
-                .middles(team.getMiddleAmount())
-                .seniors(team.getSeniorAmount())
+                .juniors(devCnt.juniors())
+                .middles(devCnt.middles())
+                .seniors(devCnt.seniors())
                 .situationText(turn.getSituation())
                 .missionId(game.getMission().getId())
-                .superEmployees(superEmployeeNames)
+                .superEmployees(cLevels)
+                .officeName(office.getName())
                 .build();
     }
 
@@ -310,10 +334,6 @@ public class GameService {
     }
 
     private int clamp(int val) {
-        return Math.min(100, Math.max(0, val));
-    }
-
-    private Long clamp(Long val) {
         return Math.min(100, Math.max(0, val));
     }
 
@@ -377,6 +397,7 @@ public class GameService {
     }
 
     private ResourceDelta calculateDelta(double score) {
+        score = score * 1500.00;
         if (score >= 0.8) {
             return new ResourceDelta(15, 10, 8, 20000);
         }

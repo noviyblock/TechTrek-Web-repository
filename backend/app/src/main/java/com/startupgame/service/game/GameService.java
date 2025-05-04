@@ -455,7 +455,7 @@ public class GameService {
         resources.setMotivation(clamp((int) Math.round((resources.getMotivation() + resourcesDelta.getMotivation()) * multiplier)));
         resources.setTechnicReadiness(clamp((int) Math.round((resources.getTechnicReadiness() + resourcesDelta.getTechnicalReadiness()) * multiplier)));
         resources.setProductReadiness(clamp((int) Math.round((resources.getProductReadiness() + resourcesDelta.getProductReadiness()) * multiplier)));
-        resources.setMoney(Math.round((resources.getMoney() + resourcesDelta.getMoney()) * multiplier));
+        resources.setMoney(Math.max(0L, Math.round((resources.getMoney() + resourcesDelta.getMoney()) * multiplier)));
         resourcesRepository.save(resources);
     }
 

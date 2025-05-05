@@ -18,7 +18,7 @@
 
 [Схема API](https://noviyblock.github.io/TechTrek-Web-repository/docs/api/)
 
-[Кросс-проверка и фитбэк от однокурсников](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?gid=178095696#gid=178095696
+[Кросс-проверка и фитбэк от однокурсников](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?gid=178095696#gid=178095696)
 
 [CI/CD проекта: GitHubActions](https://github.com/noviyblock/TechTrek-Web-repository/actions)
 

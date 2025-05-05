@@ -6,6 +6,7 @@ const SmallButton: React.FC<ButtonProps> = ({
   onClick,
   color = "Default",
   width,
+  form,
 }) => (
   <button
     style={{
@@ -14,6 +15,9 @@ const SmallButton: React.FC<ButtonProps> = ({
       width: width ?? "33%",
     }}
     className="p-3 rounded-full font-inter text-xs"
+    form={form}
+    type={form ? "submit" : "button"}
+    onClick={onClick}
   >
     {children}
   </button>

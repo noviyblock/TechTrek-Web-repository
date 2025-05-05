@@ -1,21 +1,19 @@
-import React, { useState } from "react";
-import { register } from "../../api/Auth";
+import { useState } from "react";
 import InputField from "../atom/InputField";
 import Link from "../atom/Link";
 import MediumButton from "../atom/MediumButton";
+import { login } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
 
-const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
-  const [username, setUsername] = useState("");
+const LoginForm: React.FC<{ width: string }> = ({ width }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [repeatedPassword, setRepeatedPassword] = useState("");
   const navigate = useNavigate();
 
-  async function registerOnClick(e: React.FormEvent<HTMLFormElement>) {
+  async function loginOnClick(e: React.FormEvent<HTMLFormElement>) {
     try {
       e.preventDefault();
-      const response = await register({ username, email, password });
+      const response = await login({ email, password });
       if (response === 200) {
         navigate("/game");
       }
@@ -32,20 +30,14 @@ const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
       </div>
       <form
         className="flex flex-col items-center py-16 w-full"
-        onSubmit={registerOnClick}
-        id="registerForm"
+        onSubmit={loginOnClick}
+        id="loginForm"
       >
         <div className="flex flex-col gap-12 items-center w-full">
           <div className="flex flex-col gap-12 items-center w-full">
             <div className="flex flex-col gap-4 w-full items-center">
               <InputField
-                placeholder="username"
-                value={username}
-                onChange={setUsername}
-              />
-              <InputField
-                placeholder="e-mail"
-                type="email"
+                placeholder="email"
                 value={email}
                 onChange={setEmail}
               />
@@ -55,17 +47,11 @@ const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
                 value={password}
                 onChange={setPassword}
               />
-              <InputField
-                placeholder="подтвердите пароль"
-                type="password"
-                value={repeatedPassword}
-                onChange={setRepeatedPassword}
-              />
             </div>
-            <Link href="/login">Вход</Link>
+            <Link href="/register">Регистрация</Link>
           </div>
-          <MediumButton color="Primary" form="registerForm">
-            Зарегестрироваться
+          <MediumButton color="Primary" form="loginForm">
+            Войти
           </MediumButton>
         </div>
       </form>
@@ -73,4 +59,4 @@ const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
   );
 };
 
-export default RegistrationForm;
+export default LoginForm;

@@ -1,8 +1,10 @@
-import axios, { InternalAxiosRequestConfig } from 'axios';
-import tokenService from './services/tokenService';
-import { AxiosError } from 'axios';
-import { backendURL } from '../shared/constants';
-import { refresh } from './auth';
+import axios, { InternalAxiosRequestConfig } from "axios";
+import tokenService from "./services/TokenService";
+import { AxiosError } from "axios";
+import { backendURL } from "../shared/constants";
+import { refresh } from "./Auth";
+
+axios.defaults.baseURL = backendURL;
 
 const axiosInstance = axios.create({
   baseURL: backendURL,
@@ -10,7 +12,10 @@ const axiosInstance = axios.create({
 });
 
 let isRefreshing = false;
-let failedQueue: { resolve: (token: string) => void; reject: (err: any) => void }[] = [];
+let failedQueue: {
+  resolve: (token: string) => void;
+  reject: (err: any) => void;
+}[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -31,12 +36,14 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (!tokenService.getRefreshToken()) {
         tokenService.removeTokens();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(error);
       }
 
@@ -71,7 +78,7 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         tokenService.removeTokens();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

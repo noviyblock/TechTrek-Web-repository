@@ -17,6 +17,7 @@ const ChoosableText: React.FC<ChoosableTextProps> = ({
       borderColor: Color[borderColor ?? "Default"],
     }}
     className="grid place-items-center w-10/12 text-center font-inter hover:cursor-pointer rounded-xl px-5 min-h-[4em] max-h-[4em]"
+    onClick={onClick}
   >
     {children}
   </div>

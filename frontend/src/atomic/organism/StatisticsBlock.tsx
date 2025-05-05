@@ -15,7 +15,7 @@ const Statistics: React.FC<StatisticsProps> = ({
   employees,
   actives,
 }) => (
-  <Block>
+  <Block grow={1}>
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3">
         <div className="font-inter text-white text-base">Показатели</div>

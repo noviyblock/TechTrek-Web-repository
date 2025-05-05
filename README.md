@@ -46,4 +46,6 @@
 ## Видео к проекту:
 [Видеопрезентация ТЗ](https://disk.yandex.ru/d/5gtE36Z45lKDHQ)
 
+[Пркзентация MVP](https://disk.yandex.ru/d/S9ihnx2lWpV7ow)
+
 

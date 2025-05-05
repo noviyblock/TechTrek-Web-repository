@@ -6,12 +6,15 @@ export interface ButtonProps {
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   color?: keyof typeof Color;
   width?: number;
+  form?: string;
 }
 
 export interface InputProps {
   children?: React.ReactNode;
   placeholder?: string;
   type?: string;
+  value: string;
+  onChange: (event: string) => void;
 }
 
 export interface LinkProps {
@@ -22,6 +25,7 @@ export interface LinkProps {
 
 export interface CardButtonProps {
   tooltip: React.ReactNode;
+  id?: number
   name: string;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
   imagePath?: string;
@@ -31,6 +35,7 @@ export interface CardButtonProps {
 
 export interface ChoosableTextProps {
   children?: React.ReactNode;
+  id?: number;
   color: keyof typeof Color;
   borderColor?: keyof typeof Color;
   onClick?: React.MouseEventHandler<HTMLDivElement>;

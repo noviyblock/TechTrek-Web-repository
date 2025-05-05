@@ -6,6 +6,7 @@ const LargeButton: React.FC<ButtonProps> = ({
   onClick,
   color = "Default",
   width,
+  form,
 }) => (
   <button
     onClick={onClick}
@@ -15,6 +16,8 @@ const LargeButton: React.FC<ButtonProps> = ({
       width: width ?? "99%",
     }}
     className="p-5 rounded-full font-inter text-base"
+    form={form}
+    type={form ? "submit" : "button"}
   >
     {children}
   </button>

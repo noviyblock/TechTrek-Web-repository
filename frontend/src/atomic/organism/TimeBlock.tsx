@@ -9,7 +9,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   startTitle,
   endTitle,
 }) => (
-  <Block>
+  <Block grow={0}>
     <ExtraTitledProgress
       current={current}
       end={end}

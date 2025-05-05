@@ -8,11 +8,13 @@ import {
   StackedPicture,
 } from "./Types";
 import Logo from "./banana.jpeg";
+import { GameState } from "../api/Game";
 
 export const containerColor = "#121212";
 export const containerBorderColor = "#3C3C3C";
 
 export const defaultAnimationTimeMs = 700;
+export const defaultPicture = Logo;
 
 export const categories: CardButtonProps[] = [
   {
@@ -28,7 +30,7 @@ export const categories: CardButtonProps[] = [
     color: "Primary",
   },
   {
-    name: "FinTech",
+    name: "Fintech",
     tooltip: (
       <div>
         ПОЗНАКОМЬСЯ С ВЫЗОВАМИ
@@ -39,7 +41,7 @@ export const categories: CardButtonProps[] = [
     color: "Warning",
   },
   {
-    name: "GameTech",
+    name: "Gamedev",
     tooltip: (
       <div>
         ПОЗНАКОМЬСЯ С ВЫЗОВАМИ
@@ -85,7 +87,7 @@ export const categories: CardButtonProps[] = [
   },
 ];
 
-export const backendURL = '';
+export const backendURL = "http://95.174.91.208:8080";
 
 export const choosableList: ChoosableTextProps[] = [
   {
@@ -236,3 +238,22 @@ export const elements: ReactNode[] = [
     </ul>
   </div>,
 ];
+
+export const nullGameState: GameState = {
+  gameId: 0,
+  companyName: "",
+  stage: 0,
+  turnNumber: 0,
+  monthsPassed: 0,
+  missionId: 0,
+  money: 0,
+  technicReadiness: 0,
+  productReadiness: 0,
+  motivation: 0,
+  juniors: 0,
+  middles: 0,
+  seniors: 0,
+  superEmployees: [],
+  numberOfOffices: 0,
+  situationText: ""
+}

@@ -6,6 +6,7 @@ const MediumButton: React.FC<ButtonProps> = ({
   onClick,
   color = "Default",
   width,
+  form,
 }) => (
   <button
     onClick={onClick}
@@ -15,6 +16,8 @@ const MediumButton: React.FC<ButtonProps> = ({
       width: width ?? "66%",
     }}
     className="p-4 rounded-full font-inter text-sm"
+    form={form}
+    type={form ? "submit" : "button"}
   >
     {children}
   </button>

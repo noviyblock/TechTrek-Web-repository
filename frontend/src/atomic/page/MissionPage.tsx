@@ -1,9 +1,10 @@
 import ChoosableTextList from "../molecule/ChoosableTextList";
 import SingleElementLayoutTemplate from "../template/SingleElementLayout";
-import { choosableList } from "../../shared/constants";
+import { ChoosableTextProps } from "../../shared/Types";
 
 
-const MissionPage: React.FC = () => (
+const MissionPage: React.FC<{missions: ChoosableTextProps[], onClick: (mission: number) => void}> = ({missions, onClick}) => { 
+  return (
   <SingleElementLayoutTemplate
     backable={true}
     regenable={true}
@@ -16,9 +17,10 @@ const MissionPage: React.FC = () => (
         <br />
         Теперь выберите ваши цель и миссию
       </div>
-      <ChoosableTextList choosableList={choosableList} />
+      <ChoosableTextList choosableList={missions} onClick={onClick} />
     </div>
   </SingleElementLayoutTemplate>
 );
+}
 
 export default MissionPage;

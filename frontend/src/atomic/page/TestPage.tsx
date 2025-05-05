@@ -7,14 +7,14 @@ const TestPage: React.FC = () => {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            setNumber(currentNumber + 1 === 7 ? 1 : currentNumber + 1);
+            setNumber(Math.ceil(Math.random() * 6));
             setRotation(currentRotation === 'rotate-180' ? '-rotate-180' : 'rotate-180');
           }, 800);
     
           return () => clearTimeout(timeout);
     });
 
-    return <Cube amount={currentNumber} rotation={currentRotation}></Cube>
+    return <Cube amount={currentNumber} rotation={30}></Cube>
 };
 
 export default TestPage;

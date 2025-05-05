@@ -8,7 +8,7 @@ const CommandBlock: React.FC<CommandBlockProps> = ({
   commandPic,
   participants,
 }) => (
-  <Block>
+  <Block grow={0}>
     <div className="flex flex-col gap-2">
       <div className="flex flex-row justify-between content-center max-h-[3em] min-h-[3em]">
         <div className="flex flex-col">

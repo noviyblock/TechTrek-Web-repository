@@ -14,13 +14,11 @@
 
 [Схемы и диаграммы проекта](https://miro.com/app/board/uXjVIJDm-rA=/?share_link_id=340327924721)
 
-[Кросс-проверка по чек-листу и фитбек от однокурсников](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?usp=sharing)
-
 [Схема API](https://noviyblock.github.io/TechTrek-Web-repository/docs/api/)
 
-[Кросс-проверка и фитбэк от однокурсников: 1-я аттестация](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?gid=178095696#gid=178095696)
-
 [CI/CD проекта: GitHubActions](https://github.com/noviyblock/TechTrek-Web-repository/actions)
+
+[Кросс-проверка и фитбэк от однокурсников: 1-я аттестация](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?gid=178095696#gid=178095696)
 
 ## Документация проекта:
 [Редактируемый гейм-дизайн документ](https://docs.google.com/document/d/1ipgYsqZJKgKANSeSxxwN7SKeedVZGZCGrAGbxDAUHug/edit?tab=t.0)

@@ -20,6 +20,8 @@
 
 [Кросс-проверка и фитбэк от однокурсников: 1-я аттестация](https://docs.google.com/spreadsheets/d/13YKOvzV7jyS1OseR_betV5oW4j_kMyNTD6rEV9CL7d4/edit?gid=178095696#gid=178095696)
 
+[Кросс-проверка и фитбек от однокурсников: 2-я аттестация](https://docs.google.com/spreadsheets/d/16xFaDXzNxKSrtZaR0VIYNgHAEtms-4v47aozlcLBHlE/edit?usp=sharing)
+
 ## Документация проекта:
 [Редактируемый гейм-дизайн документ](https://docs.google.com/document/d/1ipgYsqZJKgKANSeSxxwN7SKeedVZGZCGrAGbxDAUHug/edit?tab=t.0)
 

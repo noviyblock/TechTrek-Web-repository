@@ -30,6 +30,8 @@
 
 [Кросс-проверка и фитбек от однокурсников: 2-я аттестация](https://docs.google.com/spreadsheets/d/16xFaDXzNxKSrtZaR0VIYNgHAEtms-4v47aozlcLBHlE/edit?usp=sharing)
 
+[Схема БД](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/%D0%A1%D1%85%D0%B5%D0%BC%D0%B0%20%D0%91%D0%94.jpg)
+
 ## Документация проекта:
 [Редактируемый гейм-дизайн документ](https://docs.google.com/document/d/1ipgYsqZJKgKANSeSxxwN7SKeedVZGZCGrAGbxDAUHug/edit?tab=t.0)
 

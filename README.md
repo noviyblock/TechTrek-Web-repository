@@ -7,6 +7,14 @@
 * Штоколов Ф.В. - Fullstack, QA
 * Меньшиков Н.С - Fullstack, QA
 * Родионов Р.И - ML-developer
+
+## Как играть:
+[Игра](http://95.174.91.208:3000/login)
+
+Данные для входа:
+"email": "newuser@example.com",
+"password": "strongPassword123"
+
 ## Ссылки для проекта:
 [Трекер задач](https://github.com/users/noviyblock/projects/2/views/6)
 

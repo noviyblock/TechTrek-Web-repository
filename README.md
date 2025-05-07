@@ -9,7 +9,7 @@
 * Родионов Р.И - ML-developer
 
 ## Как играть:
-[Игра](http://95.174.91.208:3000/login)
+[Игра](https://techtrekgame.ru/login)
 
 Данные для входа:
 "email": "newuser@example.com",

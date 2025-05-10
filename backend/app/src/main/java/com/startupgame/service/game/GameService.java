@@ -72,6 +72,7 @@ public class GameService {
      */
     @Transactional
     public GameStateDTO startGame(Long missionId, String companyName, String username) {
+        log.info("Starting game with missionId: {}", missionId);
         NewGameRequest newGameRequest = new NewGameRequest();
         newGameRequest.setMoney(100000L);
         newGameRequest.setTechnicReadiness(0);
@@ -132,6 +133,7 @@ public class GameService {
 
     @Transactional
     public GameStateDTO getCurrentState(Long gameId) {
+        log.info("Getting current state for gameId: {}", gameId);
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Game with id=%d not found", gameId)));
@@ -149,6 +151,7 @@ public class GameService {
     }
 
     public List<ModifierResponse> getAllModifiers(Long gameId) {
+        log.info("Getting modifiers for gameId: {}", gameId);
         List<Long> ownedIds = gameModifierRepository
                 .findByGameId(gameId)
                 .stream()
@@ -196,6 +199,7 @@ public class GameService {
      */
     @Transactional
     public PurchaseResponse purchaseModifier(Long gameId, Long modifierId) {
+        log.info("Purchase modifier for gameId: {}, modifierId: {}", gameId, modifierId);
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Game with id=" + gameId + " not found"));
@@ -276,6 +280,7 @@ public class GameService {
 
     @Transactional
     public EvaluateDecisionResponse evaluateDecision(Long gameId, DecisionRequest decisionRequest) {
+        log.info("Evaluate decision request: {}", gameId);
         GameContext gameContext = loadGameContext(gameId);
         if (gameContext.getGame().getEndTime() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
@@ -292,6 +297,7 @@ public class GameService {
 
     @Transactional
     public EvaluateDecisionResponse evaluatePresentation(Long gameId, DecisionRequest decisionRequest) {
+        log.info("Evaluate presentation request: {}", userRepository.findById(gameId).get().getUsername());
         GameContext gameContext = loadGameContext(gameId);
         if (gameContext.getGame().getEndTime() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
@@ -358,6 +364,7 @@ public class GameService {
     }
 
     private GameContext loadGameContext(Long gameId) {
+        log.debug("Loading game context: {} for user {}", gameId, userRepository.findById(gameId).get().getUsername());
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
         Turn currentTurn = turnRepository.findTopByGameIdOrderByTurnNumberDesc(gameId)
@@ -371,6 +378,7 @@ public class GameService {
     }
 
     private EvaluateDecisionResult callMl(GameContext gameContext, String decision) {
+        log.info("Calling ml {} for user {}", gameContext.getGame().getId(), gameContext.getGame().getUser());
         DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(gameContext.getGame().getId());
         List<String> cLevels = gameModifierRepository.findCLevelNames(gameContext.getGame().getId());
 

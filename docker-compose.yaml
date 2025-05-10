@@ -13,6 +13,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - gradle-cache:/home/gradle/.gradle
 
   frontend:
     build:
@@ -83,3 +85,4 @@ services:
 volumes:
   pgdata:
   esdata:
+  gradle-cache:

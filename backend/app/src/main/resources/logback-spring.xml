@@ -11,6 +11,8 @@
             <customFields>
                 { "app_name":"startup-game", "env":"${SPRING_PROFILES_ACTIVE:-local}" }
             </customFields>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>username</includeMdcKeyName>
         </encoder>
     </appender>
 

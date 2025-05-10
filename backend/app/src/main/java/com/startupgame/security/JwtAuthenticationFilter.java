@@ -1,9 +1,12 @@
 package com.startupgame.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.startupgame.entity.user.User;
+import com.startupgame.repository.user.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +19,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
@@ -43,6 +48,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 if (jwtUtil.validateToken(jwt, userDetails)) {
+                    User user = userRepository.findByUsername(userDetails.getUsername())
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    if (user != null) {
+                        MDC.put("userId", String.valueOf(user.getId()));
+                        MDC.put("username", user.getUsername());
+                    } else {
+                        MDC.put("username", username);
+                    }
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -62,6 +75,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jsonResponse = objectMapper.writeValueAsString(errorDetails);
 
             response.getWriter().write(jsonResponse);
+        } finally {
+            MDC.clear();
         }
     }
 }

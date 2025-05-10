@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -85,7 +86,7 @@ public class AuthService {
     }
 
     /**
-     * Обновляет access токен по действующему refresh токену.
+     * Обновляет access токен по-действующему refresh токену.
      * <p>
      * Метод выполняет следующие шаги:
      * <ul>
@@ -150,8 +151,12 @@ public class AuthService {
 
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        MDC.put("userId", String.valueOf(user.getId()));
+        MDC.put("username", user.getUsername());
 
         saveRefreshToken(user, refreshToken);
+
+        log.info("User {} authenticated successfully", user.getId());
 
         return new AuthResponse(accessToken, refreshToken);
     }

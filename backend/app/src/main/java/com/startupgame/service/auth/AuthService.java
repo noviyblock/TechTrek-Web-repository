@@ -73,6 +73,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
+        MDC.put("username", request.getUsername());
+        MDC.put("userId", String.valueOf(user.getId()));
         log.info("User '{}' successfully registered", user.getUsername());
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
@@ -81,7 +83,7 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
         saveRefreshToken(user, refreshToken);
-
+        MDC.clear();
         return new AuthResponse(accessToken, refreshToken);
     }
 
@@ -140,6 +142,7 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
+        log.debug("Login requested: {}", request.getEmail());
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -151,13 +154,13 @@ public class AuthService {
 
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        MDC.put("userId", String.valueOf(user.getId()));
-        MDC.put("username", user.getUsername());
 
         saveRefreshToken(user, refreshToken);
 
+        MDC.put("username", user.getUsername());
+        MDC.put("userId", String.valueOf(user.getId()));
         log.info("User {} authenticated successfully", user.getId());
-
+        MDC.clear();
         return new AuthResponse(accessToken, refreshToken);
     }
 

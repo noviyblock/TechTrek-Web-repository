@@ -1,5 +1,6 @@
 package com.startupgame.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -8,24 +9,28 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> notFound(EntityNotFoundException ex) {
+        log.info("Entity not found: {}", ex.getMessage());
         return Map.of("error", ex.getMessage());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> integrity(DataIntegrityViolationException ex) {
+        log.warn("DB constraint violation", ex);
         return Map.of("error", "DB constraint violation");
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> generic(Exception ex) {
+        log.error("Unexpected server error", ex);
         return Map.of("error", "Unexpected server error");
     }
 
@@ -45,6 +50,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIllegalState(IllegalStateException ex) {
         return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String,String> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("Bad credentials", ex);
+        return Map.of("error", "Invalid username or password");
     }
 }
 

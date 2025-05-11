@@ -18,7 +18,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
 
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
-    implementation("org.springframework.boot:spring-boot-starter-validation:3.4.3")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
 
     // PostgreSQL драйвер (для подключения к базе данных)
@@ -33,6 +33,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+
+    // https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder
+    implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")

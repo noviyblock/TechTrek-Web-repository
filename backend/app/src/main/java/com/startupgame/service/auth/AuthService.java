@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -72,6 +73,8 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
+        MDC.put("username", request.getUsername());
+        MDC.put("userId", String.valueOf(user.getId()));
         log.info("User '{}' successfully registered", user.getUsername());
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
@@ -80,12 +83,12 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
         saveRefreshToken(user, refreshToken);
-
+        MDC.clear();
         return new AuthResponse(accessToken, refreshToken);
     }
 
     /**
-     * Обновляет access токен по действующему refresh токену.
+     * Обновляет access токен по-действующему refresh токену.
      * <p>
      * Метод выполняет следующие шаги:
      * <ul>
@@ -139,6 +142,7 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
+        log.debug("Login requested: {}", request.getEmail());
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -153,6 +157,10 @@ public class AuthService {
 
         saveRefreshToken(user, refreshToken);
 
+        MDC.put("username", user.getUsername());
+        MDC.put("userId", String.valueOf(user.getId()));
+        log.info("User {} authenticated successfully", user.getId());
+        MDC.clear();
         return new AuthResponse(accessToken, refreshToken);
     }
 

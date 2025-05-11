@@ -67,7 +67,7 @@ export const getSpheres = async () => {
 }
 
 export const getMissions = async (sphereId: number, page: number = 0, size: number = 3) => {
-    return (await axiosInstance.get<Mission[]>("/missions", { params: {sphereId, page, size} })).data;
+    return (await axiosInstance.get<Mission[]>("/api/missions", { params: {sphereId, page, size} })).data;
 }
 
 export const startGame = async (req: StartGame) => {

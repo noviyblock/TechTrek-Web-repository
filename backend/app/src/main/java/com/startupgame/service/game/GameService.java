@@ -297,11 +297,11 @@ public class GameService {
 
     @Transactional
     public EvaluateDecisionResponse evaluatePresentation(Long gameId, DecisionRequest decisionRequest) {
-        log.info("Evaluate presentation request: {}", userRepository.findById(gameId).get().getUsername());
         GameContext gameContext = loadGameContext(gameId);
         if (gameContext.getGame().getEndTime() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
         }
+        log.debug("Evaluate presentation request for user: {} and gameId: {}", gameContext.getGame().getUser().getUsername(), gameId);
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
         ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
         applyChanges(gameContext.getResources(), rawDelta, 1.0);
@@ -364,9 +364,9 @@ public class GameService {
     }
 
     private GameContext loadGameContext(Long gameId) {
-        log.debug("Loading game context: {} for user {}", gameId, userRepository.findById(gameId).get().getUsername());
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
+        log.debug("Loading game context: {} for user {}", gameId, game.getUser().getUsername());
         Turn currentTurn = turnRepository.findTopByGameIdOrderByTurnNumberDesc(gameId)
                 .orElseThrow(() -> new EntityNotFoundException("No turns for game " + gameId));
         Resources resources = resourcesRepository.findById(currentTurn.getResources().getId())

@@ -4,8 +4,11 @@
 
 <instance-profile id="td"
                  name="TechTrek Documentation"
-                 start-page="starter-topic.md">
+                  start-page="auth-flow.md">
 
-    <toc-element topic="starter-topic.md"/>
-    <toc-element topic="Аутентификация.md"/>
+    <toc-element topic="auth-flow.md">
+        <toc-element topic="auth-endpoints.md"/>
+        <toc-element topic="spring-security-config.md"/>
+        <toc-element topic="auth-logic.md"/>
+    </toc-element>
 </instance-profile>

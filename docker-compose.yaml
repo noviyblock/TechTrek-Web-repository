@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    image: 11zzard/elasticsearch:8.13.4
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -60,26 +60,26 @@ services:
     volumes: [ "esdata:/usr/share/elasticsearch/data" ]
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.13.4
+    image: 11zzard/kibana:8.13.4
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${TOKEN}
       - xpack.security.enrollment.enabled=false
-    env_file:
-      - .env.kibana
+      - SERVER_BASEPATH=/logs
+      - SERVER_REWRITEBASEPATH=true
+      - SERVER_PUBLICBASEURL=https://techtrekgame.ru/logs
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
     ports: [ "5601:5601" ]
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.13.4
+    image: 11zzard/logstash:8.13.4
     container_name: logstash
     ports: [ "5000:5000" ]
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline
     environment:
       - xpack.monitoring.enabled=false
-    env_file:
-      - .env.logstash
 
 
 volumes:

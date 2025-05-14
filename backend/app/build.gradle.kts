@@ -57,6 +57,8 @@ dependencies {
     testImplementation("com.h2database:h2:2.3.232")
     testImplementation("org.assertj:assertj-core:3.25.3")
 
+    testImplementation("org.springframework.security:spring-security-test:6.3.1")
+
 }
 
 tasks.withType<Test> {

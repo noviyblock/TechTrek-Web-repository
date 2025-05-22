@@ -20,6 +20,9 @@ _store: Dict[UUID, GameState] = {}
 # ---------------------------------------------------------------------------
 
 def create_initial_state(
+    sphere: str,
+    mission: str,
+    startup_name: str | None = None,
     money: int = 100_000,
     tech: int = 0,
     product: int = 0,
@@ -30,6 +33,9 @@ def create_initial_state(
     gs = GameState(
         game_id=uuid4(),
         stage=Stage.PRE_MVP,
+        sphere=sphere,
+        mission=mission,
+        startup_name=startup_name,
         resources=Resources(
             money=money,
             tech=tech,
@@ -126,8 +132,23 @@ def update_staff(
 # History helper
 # ---------------------------------------------------------------------------
 
-def push_history(game_id: UUID, text: str) -> None:
-    """Добавить строку в `state.history` и сразу сохранить."""
+
+def push_history(
+    game_id: UUID,
+    role: str,
+    content: str,
+) -> None:
+    """Добавить запись в историю в виде словаря {'role': role, 'content': content} и сохранить состояние."""
     state = load_state(game_id)
-    state.history.append(text)
+    state.history.append({'role': role, 'content': content})
     save_state(state)
+
+def get_history(
+    game_id: UUID,
+) -> List[Dict[str, str]]:
+    """Получить историю хода в виде списка словарей {'role': role, 'content': content}."""
+    state = load_state(game_id)
+    if len(state.history) > 20:
+        return state.history[:-20]
+    return state.history
+

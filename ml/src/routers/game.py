@@ -21,31 +21,44 @@ from src.models import (
     EvaluateDecisionRequest,
     EvaluateDecisionResult,
     ResolveRequest,
-    Zone,
+    Staffs,
+    Resources
 )
 from src.services import llm_service, state_store
 
 logger = logging.getLogger("routers.game")
 
 router = APIRouter(prefix="/game", tags=["game"])
+# ---------------------------------------------------------------------------
+# -1. generate missions
+# ---------------------------------------------------------------------------
+
+
 
 # ---------------------------------------------------------------------------
 # 0. create new game
 # ---------------------------------------------------------------------------
 
 class NewGameRequest(BaseModel):
+    sphere: str
+    mission: str
+    startup_name: str
     money: int = Field(100_000, ge=0)
     tech: int = Field(0, ge=0, le=100, alias="technicReadiness")
     product: int = Field(0, ge=0, le=100, alias="productReadiness")
     motivation: int = Field(100, ge=0, le=100)
+
 
     class Config:
         populate_by_name = True
 
 
 @router.post("/new", response_model=GameState)
-async def new_game(cfg: NewGameRequest = Body(NewGameRequest())):
+async def new_game(cfg: NewGameRequest = Body(...)):
     state = state_store.create_initial_state(
+        sphere=cfg.sphere,
+        mission=cfg.mission,
+        startup_name=cfg.startup_name,
         money=cfg.money,
         tech=cfg.tech,
         product=cfg.product,
@@ -58,13 +71,38 @@ async def new_game(cfg: NewGameRequest = Body(NewGameRequest())):
 # ---------------------------------------------------------------------------
 
 @router.post("/generate_crisis", response_model=CrisisResponse)
-async def generate_crisis(game_id: UUID = Body(..., embed=True)):
+async def generate_crisis(res: Resources, staffs: Staffs, game_id: UUID = Body(..., embed=True)):
     state = state_store.load_state(game_id)
+
+    # --- синхронизация ресурсов
+    if res.money is not None:
+        state.resources.money = res.money
+    if res.tech is not None:
+        state.resources.tech = res.tech
+    if res.product is not None:
+        state.resources.product = res.product
+    if res.motivation is not None:
+        state.resources.motivation = res.motivation
+    if res.months_passed is not None:
+        state.resources.months_passed = res.months_passed
+
+    state_store.save_state(state)
+
+    if any(v is not None for v in (staffs.juniors, staffs.middles, staffs.seniors, staffs.c_levels)):
+        state_store.update_staff(
+            staffs.game_id,
+            juniors=staffs.juniors,
+            middles=staffs.middles,
+            seniors=staffs.seniors,
+            c_levels=staffs.c_levels,
+        )
+        state = state_store.load_state(game_id)
+
     if state is None:
         raise HTTPException(404, "Игровая сессия не найдена")
     try:
         crisis = llm_service.generate_crisis(state)
-        state_store.push_history(game_id, crisis.title)
+        state_store.push_history(game_id, "Assistant", crisis.description)
         return crisis
     except Exception as exc:
         raise HTTPException(500, f"Ошибка генерации кризиса: {exc}") from exc
@@ -89,6 +127,10 @@ async def evaluate_decision(req: EvaluateDecisionRequest):
         state.resources.product = req.product
     if req.motivation is not None:
         state.resources.motivation = req.motivation
+    if req.months_passed is not None:
+        state.resources.months_passed = req.months_passed
+
+    state_store.save_state(state)
 
     # --- синхронизация штата (если передано)
     if any(v is not None for v in (req.juniors, req.middles, req.seniors, req.c_levels)):
@@ -101,13 +143,14 @@ async def evaluate_decision(req: EvaluateDecisionRequest):
         )
         state = state_store.load_state(req.game_id)
 
-    state_store.save_state(state)
+    
 
     try:
         score = llm_service.evaluate_decision(req)
+        state_store.push_history(req.game_id, "User", req.decision)
         result = EvaluateDecisionResult(
-            resource_delta={},  # пока не считаем
-            applied_mods={},    # пока не считаем
+            resource_delta={},
+            applied_mods={},
             text_to_player="Предварительная оценка сохранена.",
             quality_score=score,
         )
@@ -115,34 +158,3 @@ async def evaluate_decision(req: EvaluateDecisionRequest):
     except Exception as exc:
         raise HTTPException(500, f"Ошибка оценки решения: {exc}") from exc
 
-# ---------------------------------------------------------------------------
-# 3. resolve (decision + dice)
-# ---------------------------------------------------------------------------
-
-@router.post("/resolve", response_model=GameState)
-async def resolve(req: ResolveRequest):
-    if not 2 <= req.dice_total <= 12:
-        raise HTTPException(400, "dice_total должен быть 2‑12")
-
-    zone_map = {
-        range(2, 5): Zone.CRITICAL_FAIL,
-        range(5, 7): Zone.FAIL,
-        range(7, 10): Zone.NEUTRAL,
-        range(10, 12): Zone.SUCCESS,
-        range(12, 13): Zone.CRITICAL_SUCCESS,
-    }
-    expected_zone = next((z for rng, z in zone_map.items() if req.dice_total in rng), None)
-    if expected_zone != req.zone:
-        raise HTTPException(400, "zone не соответствует dice_total")
-
-    pre_roll = req.pre_roll  # получаем напрямую из запроса
-
-    state = state_store.load_state(req.state.game_id)
-    if state is None:
-        raise HTTPException(404, "Игровая сессия не найдена")
-    try:
-        updated_state = llm_service.apply_dice_result(state, pre_roll, req)
-        state_store.save_state(updated_state)
-        return updated_state
-    except Exception as exc:
-        raise HTTPException(500, f"Ошибка при применении броска: {exc}") from exc

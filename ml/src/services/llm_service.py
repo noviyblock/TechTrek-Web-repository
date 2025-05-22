@@ -38,7 +38,8 @@ logger = logging.getLogger("services.llm")
 
 _API_URL = "https://openrouter.ai/api/v1"
 _MODEL_NAME = "qwen/qwen-2.5-7b-instruct:free"
-api_key = "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"
+# api_key = "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"
+api_key = "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"
 
 @lru_cache(maxsize=1)
 def _get_client() -> OpenAI:
@@ -108,7 +109,7 @@ def evaluate_decision(req: EvaluateDecisionRequest) -> float:
         f"$={req.money}, TECH={req.tech}, PROD={req.product}, MOT={req.motivation} | "
         f"J={req.juniors}, M={req.middles}, S={req.seniors}, C={','.join(req.c_levels or [])}"
     )
-
+    history = state_store.get_history(req.game_id)
     prompt = (
         f"{SYSTEM_PROMPT_BASE}\n\n"
         "Оцени решение игрока по следующим **детальным** критериям (из правил игры):\n"
@@ -120,11 +121,14 @@ def evaluate_decision(req: EvaluateDecisionRequest) -> float:
         "6. **Рациональное использование C‑level** – ключевые специалисты не злоупотребляются подряд.\n\n"
         "Ответь *одним* словом — **Yes** если решение удовлетворяет **всем** критериям, иначе **No**.\n\n"
         f"Контекст стартапа: Ресурсы: {resources_str}.\n"
+        f"Кризис: {history[-1]}"
         f"Решение игрока: {req.decision}\n\n"
         "Ответ: "
     )
 
     score = _yes_probability(prompt)
+    if score != 0:
+        state_store.push_history(req.game_id, "User", req.decision)
     logger.info("P(Yes)=%.3f for game %s", score, req.game_id)
     return score
 
@@ -168,8 +172,8 @@ def generate_crisis(state: GameState) -> CrisisResponse:
     data = _chat([
         {"role": "system", "content": SYSTEM_PROMPT_BASE},
         {"role": "user", "content": prompt},
-    ], max_tokens=120, temperature=0.9, logprobs=False)
-    description = data["choices"][0]["message"]["content"].split("Описание:")[-1].strip()
+    ], max_tokens=200, temperature=0.9, logprobs=False)
+    description = data.choices[0].message.content.split("Описание:")[-1].strip()
 
     return CrisisResponse(
         title="",
@@ -179,3 +183,48 @@ def generate_crisis(state: GameState) -> CrisisResponse:
         forbidden_roles=[],
         resource_targets=[],
     )
+
+import json, re
+
+def generate_missions(sphere: str) -> dict[int, str]:
+    """Сгенерировать три миссии для стартапа в указанной сфере.
+    Возвращает словарь с ключами 1,2,3 и описаниями миссий.
+    Использует строгую инструкцию для гарантированного JSON без инструментов.
+    """
+
+    prompt = (
+        f"Сфера: {sphere} "
+        "Придумай три уникальные миссии для стартапа в указанной сфере. "
+        "ОТВЕТ: строго JSON-объект, где ключи — строки \"1\", \"2\", \"3\" и значения — описания миссий. "
+        "Без дополнительного текста, только валидный JSON."
+        )
+    # Запрос к модели
+    response = _chat(
+        [
+            {"role": "system", "content": SYSTEM_PROMPT_BASE},
+            {"role": "user",   "content": prompt},
+        ],
+        max_tokens=512,
+        temperature=0.8,
+        logprobs=False
+    )
+    content = response.choices[0].message.content.strip()
+    try:
+        missions = json.loads(content)
+        return {int(k): v for k, v in missions.items()}
+    except json.JSONDecodeError:
+        # Логируем некорректный JSON
+        logger.error("Expected JSON but got: %s", content)
+
+        # Фоллбек: берём первые предложения из каждого пункта
+        result: dict[int, str] = {}
+        # Ищем строки вида "1. ...", "2. ..." и т.п.
+        for match in re.finditer(r'(\d+)\.\s*([^\.]+\.?)', content):
+            num = int(match.group(1))
+            sentence = match.group(2).strip()
+            # Если предложение не заканчивается точкой — добавляем её
+            if not sentence.endswith('.'):
+                sentence += '.'
+            result[num] = sentence
+        return result
+

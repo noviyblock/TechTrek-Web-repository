@@ -19,9 +19,12 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_BASE = (
-    "Ты — GM настольно‑ролевой бизнес‑симуляции «TechTrek Web». Следуй правилам:\n"
-    "1) Игровые ресурсы: деньги ($), техническая готовность, продуктовая готовность, мотивация, время в месяцах; диапазон 0‑100, деньги — целые.\n"
-    "2) Команда: C‑level (CEO, CTO, CMO) и сотрудники (PM, Dev junior/middle/senior). C‑level дают модификатор +1…+2 к броску 2d6 при использовании; подряд‑использование повышает стоимость."
+        "Ты — AI‑ведущий настольно‑ролевой бизнес‑симуляции ‘TechTrek Web’. Правила игры:\n"
+        "1) Ресурсы: деньги ($), техническая готовность, продуктовая готовность, мотивация и время (месяцы). Диапазон 0‑100, деньги — целые. Стартовые значения: $100000, 2 разработчика, 1 PM, CEO, офис и прототип продукта.\n"
+        "2) Команда включает C‑level (CEO, CTO, CMO) и сотрудников (PM, Dev junior/middle/senior). Использование C‑level в кризисе даёт +1…+2 к броску 2d6; повторное применение подряд увеличивает цену.\n"
+        "3) Каждый ход начинается с кризиса или возможности. Игрок за ограниченное время описывает решение, затем бросается 2d6 и ресурсы изменяются. Зоны: 2‑4 критический провал, 5‑6 провал, 7‑9 нейтрально, 10‑11 успех, 12 критический успех.\n"
+        "4) Техническая готовность — стабильность и масштабируемость кода; продуктовая готовность — соответствие рынку и рост аудитории. Высокая мотивация ускоряет прогресс, низкая ведёт к задержкам и выгоранию.\n"
+        "5) Цель — провести стартап через этапы pre_mvp, post_mvp и scale, балансируя ресурсы."
 )
 
 # ---------------------------------------------------------------------------
@@ -75,6 +78,12 @@ class Resources(BaseModel):
     class Config:
         populate_by_name = True
 
+class Staffs(BaseModel):
+    juniors: int | None = None
+    middles: int | None = None
+    seniors: int | None = None
+    c_levels: List[str] | None = Field(None, alias="superEmployees")
+
 # ---------------------------------------------------------------------------
 # Game state
 # ---------------------------------------------------------------------------
@@ -82,10 +91,13 @@ class Resources(BaseModel):
 class GameState(BaseModel):
     game_id: UUID = Field(default_factory=uuid4)
     stage: Stage
+    sphere: str
+    mission: str
+    startup_name: Optional[str] = None
     resources: Resources
-    staff: List[Specialist] = []
-    inventory: List[str] = []
-    history: List[str] = []            # краткие логи
+    staff: List[Specialist]
+    inventory: List[str]
+    history: List[str]        # краткие логи
 
 # ---------------------------------------------------------------------------
 # HTTP‑schemas
@@ -111,6 +123,7 @@ class EvaluateDecisionRequest(BaseModel):
     tech: int | None = Field(None, ge=0, le=100, alias="technicReadiness")
     product: int | None = Field(None, ge=0, le=100, alias="productReadiness")
     motivation: int | None = Field(None, ge=0, le=100)
+    months_passed: int = Field(0, ge=0)
 
     # Штат
     juniors: int | None = None
@@ -125,8 +138,6 @@ class EvaluateDecisionRequest(BaseModel):
 
 
 class EvaluateDecisionResult(BaseModel):
-    resource_delta: Dict[str, int]
-    applied_mods: Dict[str, int]
     text_to_player: str
     quality_score: float              # 0.0 < score ≤ 1.0 — P("Yes")
 

@@ -2,24 +2,31 @@
 
 > **Dev base URL:** `http://localhost:8000`
 
+## 1. Генерация миссии
 
 ## 2. Создание новой партии
 `POST /game/new`
 ```jsonc
 {
+  "sphere": "Dota",
+  "mission": "Победить",
+  "startup_name": "Navi",
   "money": 100000,
   "technicReadiness": 0,
   "productReadiness": 0,
   "motivation": 100
 }
 ```
-<small>*Все поля опциональны — если пропущены, берутся дефолты.*</small>
+<small>*Все поля опциональны кроме `sphere` и `mission` — если пропущены, берутся дефолты.*</small>
 
 **200 OK** — полный `GameState`:
 ```jsonc
 {
   "game_id": "22eca5ae-332a-400e-9a8f-6a34b10ddc7f",
   "stage": "pre_mvp",
+  "sphere": "Dota",
+  "mission": "Победить",
+  "startup_name": "Navi",
   "resources": {
     "money": 100000,
     "technicReadiness": 0,
@@ -38,17 +45,28 @@
 ## 3. Генерация кризиса / возможности
 `POST /game/generate_crisis`
 ```json
-{ "game_id": "<uuid>" }
+{ 
+  "game_id": "<uuid>",
+  "money": 100000,
+  "technicReadiness": 0,
+  "productReadiness": 0,
+  "motivation": 100,
+  "months_passed": 0,
+  "juniors": 0,
+  "middles": 0,
+  "seniors": 3,
+  "c_levels": ["CTO"],
+  }
 ```
 **200 OK**
 ```jsonc
 {
-  "title": "Критический баг в платёжном модуле",
+  "title": "", -> тут ничего не генерится 
   "description": "На проде обнаружена утечка…",
   "danger_level": 3,
-  "recommended_roles": ["CTO", "Dev-senior"],
+  "recommended_roles": [],
   "forbidden_roles": [],
-  "resource_targets": ["money", "tech", "product", "motivation"]
+  "resource_targets": []
 }
 ```
 
@@ -65,6 +83,7 @@
   "technicReadiness": 0,
   "productReadiness": 0,
   "motivation": 100,
+  "months_passed": 0,
   "juniors": 0,
   "middles": 0,
   "seniors": 3,
@@ -75,8 +94,6 @@
 **200 OK** — `EvaluateDecisionResult`
 ```jsonc
 {
-  "resource_delta": {},
-  "applied_mods": {},
   "text_to_player": "Предварительная оценка сохранена.",
   "quality_score": 0.0001136747
 }
@@ -84,20 +101,6 @@
 `quality_score` — вероятность того, что ответ LLM будет **Yes** (0 < p ≤ 1).
 
 ---
-
-## 5. Итог хода (решение + бросок)
-`POST /game/resolve`
-```jsonc
-{
-  "state": { … GameState … },
-  "pre_roll": { … EvaluateDecisionResult … },
-  "dice_total": 10,
-  "zone": "success"
-}
-```
-**200 OK** — обновлённый `GameState`.
-
-Ошибки: `422` — диапазон dice/zone · `404` — нет игры.
 
 ---
 
@@ -125,15 +128,6 @@
 
 ---
 
-## 7. Зоны броска 2d6
-| Сумма | `zone`             |
-|-------|--------------------|
-| 2‑4   | `critical_fail`    |
-| 5‑6   | `fail`             |
-| 7‑9   | `neutral`          |
-| 10‑11 | `success`          |
-| 12+   | `critical_success` |
-
 ---
 
 ## 8. Типовой ход
@@ -144,3 +138,13 @@
 5. `POST /game/resolve` — сервер отдаёт новый `GameState`.
 6. UI показывает изменения, лог → следующий ход.
 
+
+
+
+
+
+1. Имею память чатов, режем по 6 ласт [{'role': role, 'content': content}]
+2. Нужен метод для генерации 3х миссий -> json {1: 'first mission', 2: 'second mission', 3: 'third mission'}
+3. Нужен метод для обновления истории, нужно добавить историю в evaluate_desicion
+4. Добавить сервисный метод для возвращения истории по id
+5. Обновить evaluate_desicion так чтобы четко выделялся кризис

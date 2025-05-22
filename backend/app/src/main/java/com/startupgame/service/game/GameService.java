@@ -297,7 +297,7 @@ public class GameService {
 
     @Transactional
     public EvaluateDecisionResponse evaluatePresentation(Long gameId, DecisionRequest decisionRequest) {
-        log.info("Evaluate presentation request: {}", userRepository.findById(gameId).get().getUsername());
+        log.info("Evaluate presentation request: {}", gameRepository.findById(gameId).get().getUser().getUsername());
         GameContext gameContext = loadGameContext(gameId);
         if (gameContext.getGame().getEndTime() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
@@ -320,6 +320,7 @@ public class GameService {
         int s3 = Math.min(Math.max(tn - 12, 0), 6);
         int monthsPassed = s1 + s2 * 3 + s3 * 6;
 
+        assert office != null;
         return GameStateDTO.builder()
                 .gameId(game.getId())
                 .companyName(game.getCompanyName())
@@ -364,7 +365,7 @@ public class GameService {
     }
 
     private GameContext loadGameContext(Long gameId) {
-        log.debug("Loading game context: {} for user {}", gameId, userRepository.findById(gameId).get().getUsername());
+        log.debug("Loading game context: {} for user {}", gameId, gameRepository.findById(gameId).get().getUser().getUsername());
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new EntityNotFoundException("Game not found: " + gameId));
         Turn currentTurn = turnRepository.findTopByGameIdOrderByTurnNumberDesc(gameId)
@@ -378,7 +379,7 @@ public class GameService {
     }
 
     private EvaluateDecisionResult callMl(GameContext gameContext, String decision) {
-        log.info("Calling ml {} for user {}", gameContext.getGame().getId(), gameContext.getGame().getUser());
+        log.info("Calling ml {} for user {}", gameContext.getGame().getId(), gameContext.getGame().getUser().getUsername());
         DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(gameContext.getGame().getId());
         List<String> cLevels = gameModifierRepository.findCLevelNames(gameContext.getGame().getId());
 

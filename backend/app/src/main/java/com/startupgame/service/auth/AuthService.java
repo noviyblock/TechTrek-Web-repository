@@ -1,5 +1,14 @@
 package com.startupgame.service.auth;
 
+import org.slf4j.MDC;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.startupgame.dto.auth.AccessTokenResponse;
 import com.startupgame.dto.auth.AuthResponse;
 import com.startupgame.dto.auth.LoginRequest;
@@ -10,18 +19,11 @@ import com.startupgame.exception.UserAlreadyExistsException;
 import com.startupgame.repository.auth.RefreshTokenRepository;
 import com.startupgame.repository.user.UserRepository;
 import com.startupgame.security.JwtUtil;
+
 import jakarta.transaction.Transactional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 
 @Service
@@ -36,6 +38,7 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailService emailService;
 
 
     /**
@@ -72,6 +75,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+        emailService.sendRegistrationEmail(user.getEmail(), user.getUsername());
 
         MDC.put("username", request.getUsername());
         MDC.put("userId", String.valueOf(user.getId()));

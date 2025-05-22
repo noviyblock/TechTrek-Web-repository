@@ -1,15 +1,26 @@
 package com.startupgame.controller;
 
-import com.startupgame.dto.auth.*;
-import com.startupgame.exception.BadCredentialsException;
-import com.startupgame.exception.UserAlreadyExistsException;
-import com.startupgame.service.auth.AuthService;
-import io.jsonwebtoken.ExpiredJwtException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.startupgame.dto.auth.AccessTokenResponse;
+import com.startupgame.dto.auth.AuthResponse;
+import com.startupgame.dto.auth.LoginRequest;
+import com.startupgame.dto.auth.RefreshTokenRequest;
+import com.startupgame.dto.auth.RegisterRequest;
+import com.startupgame.exception.BadCredentialsException;
+import com.startupgame.exception.UserAlreadyExistsException;
+import com.startupgame.service.auth.AuthService;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
@@ -64,9 +75,18 @@ public class AuthController {
         return ResponseEntity.ok("User is authorized");
     }
 
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
+    // найти токен в базе, проверить срок действия
+    // установить isEmailVerified = true
+    // удалить токен
+        return ResponseEntity.ok("Email verified successfully");
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
     }
+
 }

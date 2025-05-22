@@ -29,11 +29,35 @@ from src.services import llm_service, state_store
 logger = logging.getLogger("routers.game")
 
 router = APIRouter(prefix="/game", tags=["game"])
+
+
+# ---------------------------------------------------------------------------
+# -2. service
+# ---------------------------------------------------------------------------
+
+@router.post("/getgamestate", response_model=GameState)
+async def getgamestate(game_id: UUID = Body(..., embed=True)):
+    state = state_store.load_state(
+        game_id=game_id
+    )
+    return state
+
 # ---------------------------------------------------------------------------
 # -1. generate missions
 # ---------------------------------------------------------------------------
+class Missions(BaseModel):
+    first: str
+    second: str
+    third: str
 
-
+@router.post("/generate_missions", response_model=Missions)
+async def generate_missions(sphere: str = Body(..., embed=True, description="Сфера стартапа")):
+    raw = llm_service.generate_missions(sphere)           # вернёт dict[int, str] с ключами 1,2,3
+    return Missions(
+        first  = raw.get(1, ""),
+        second = raw.get(2, ""),
+        third  = raw.get(3, "")
+    )
 
 # ---------------------------------------------------------------------------
 # 0. create new game
@@ -90,7 +114,7 @@ async def generate_crisis(res: Resources, staffs: Staffs, game_id: UUID = Body(.
 
     if any(v is not None for v in (staffs.juniors, staffs.middles, staffs.seniors, staffs.c_levels)):
         state_store.update_staff(
-            staffs.game_id,
+            game_id,
             juniors=staffs.juniors,
             middles=staffs.middles,
             seniors=staffs.seniors,
@@ -147,7 +171,7 @@ async def evaluate_decision(req: EvaluateDecisionRequest):
 
     try:
         score = llm_service.evaluate_decision(req)
-        state_store.push_history(req.game_id, "User", req.decision)
+        
         result = EvaluateDecisionResult(
             resource_delta={},
             applied_mods={},

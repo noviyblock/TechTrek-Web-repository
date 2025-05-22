@@ -20,9 +20,14 @@ from functools import lru_cache
 from typing import List
 import random
 
-import torch
-from transformers import pipeline, Pipeline
+# import torch
+# from transformers import pipeline, Pipeline
 
+import math
+from openai import OpenAI
+import os
+
+from src.services import state_store
 from src.models import SYSTEM_PROMPT_BASE, EvaluateDecisionRequest, GameState, CrisisResponse
 
 logger = logging.getLogger("services.llm")
@@ -31,48 +36,65 @@ logger = logging.getLogger("services.llm")
 # LLM initialisation (lazy singleton)
 # ---------------------------------------------------------------------------
 
-_MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
-
+_API_URL = "https://openrouter.ai/api/v1"
+_MODEL_NAME = "qwen/qwen-2.5-7b-instruct:free"
+api_key = "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"
 
 @lru_cache(maxsize=1)
-def _get_generator() -> Pipeline:
-    """Загрузить text‑generation pipeline один раз за процесс."""
-    logger.info("Loading LLM: %s", _MODEL_NAME)
-    return pipeline(
-        "text-generation",
-        model=_MODEL_NAME,
-        device_map="auto",
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-    )
-
+def _get_client() -> OpenAI:
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is not set")
+    return OpenAI(base_url=_API_URL, api_key=api_key)
 
 def warmup() -> None:
-    """Форсированная инициализация LLM при старте FastAPI."""
-    _get_generator()
+    """Проверить наличие API-ключа."""
+    _get_client()
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _yes_probability(prompt: str, pipe: Pipeline) -> float:
-    tok = pipe.tokenizer
-    yes_ids: List[int] = [tok.encode(v, add_special_tokens=False)[0] for v in ("Yes", "yes", "Да", "да")]
-    inputs = tok(prompt, return_tensors="pt")
-    with torch.no_grad():
-        inputs = pipe.tokenizer(prompt, return_tensors="pt").to(pipe.model.device)
-        out = pipe.model.generate(
-            **inputs,
-            max_new_tokens=1,
-            do_sample=False,
-            return_dict_in_generate=True,
-            output_scores=True,          # ← фикс
-        )
 
-    logits = out.scores[0]                       # (1, vocab)
-    probs  = torch.softmax(logits, dim=-1)[0]
-    prob_yes = float(probs[yes_ids].sum()) if yes_ids else 0.0
-    return prob_yes
+def _chat(messages: List[dict], max_tokens: int = 1, temperature: float = 0.0, logprobs: bool = True) -> dict:
+    client = _get_client()
+    response = client.chat.completions.create(
+        model=_MODEL_NAME,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        logprobs=True,
+        top_logprobs=20
+    )
+    return response
+
+
+def _yes_probability(prompt: str) -> float:
+    data = _chat([
+        {"role": "system", "content": SYSTEM_PROMPT_BASE},
+        {"role": "user",   "content": prompt},
+    ])
+    choice = data.choices[0]
+    lp     = choice.logprobs
+
+    if lp and lp.content:
+        first_info = lp.content[0]
+        probs = { first_info.token.strip(): math.exp(first_info.logprob) }
+
+        for alt in first_info.top_logprobs:
+            probs[alt.token.strip()] = math.exp(alt.logprob)
+
+        yes = sum(probs.get(t, 0.0) for t in ("Yes", "yes", "Да", "да"))
+        no  = sum(probs.get(t, 0.0) for t in ("No",  "no",  "Нет", "нет"))
+        
+        print(yes, no)
+        if yes == 0.0:
+            yes = 1.0 - no
+
+        return yes
+
+    content = choice.message.content.strip().lower()
+    return 1.0 if content.startswith(("yes", "да")) else 0.0
 
 
 
@@ -82,8 +104,6 @@ def _yes_probability(prompt: str, pipe: Pipeline) -> float:
 
 def evaluate_decision(req: EvaluateDecisionRequest) -> float:
     """Вероятность того, что решение удовлетворяет **всем** критериям."""
-    pipe = _get_generator()
-
     resources_str = (
         f"$={req.money}, TECH={req.tech}, PROD={req.product}, MOT={req.motivation} | "
         f"J={req.juniors}, M={req.middles}, S={req.seniors}, C={','.join(req.c_levels or [])}"
@@ -104,7 +124,7 @@ def evaluate_decision(req: EvaluateDecisionRequest) -> float:
         "Ответ: "
     )
 
-    score = _yes_probability(prompt, pipe)
+    score = _yes_probability(prompt)
     logger.info("P(Yes)=%.3f for game %s", score, req.game_id)
     return score
 
@@ -128,7 +148,7 @@ def _staff_summary(state: GameState) -> str:
 
 def generate_crisis(state: GameState) -> CrisisResponse:
     """Сгенерировать текст кризисной ситуации и danger_level (1‑3)."""
-    pipe = _get_generator()
+    history = state_store.get_history(state.game_id)
     res = state.resources
     summary = (
         f"$={res.money}, TECH={res.tech}, PROD={res.product}, MOT={res.motivation} | "
@@ -136,14 +156,20 @@ def generate_crisis(state: GameState) -> CrisisResponse:
     )
 
     prompt = (
-        "Ты — GM игры о стартапе. Придумай кризисную ситуацию или возможность "
-        "(2–3 предложения, связный текст) для стартапа на стадии "
-        f"{state.stage}.\n\nКонтекст стартапа: {summary}\n\nОписание:"
+        f"История чата: {history}"
+        f"Ты — GM игры о технологическом стартапе {state.startup_name}. "
+        f"Сфера: {state.sphere}. {state.mission} "
+        f"Стадия: {state.stage}. "
+        f"\n\nКонтекст стартапа: {summary}"
+        "Сгенерируй одну кризисную ситуацию или возможность (2–3 предложения).\n\n"
+        "Описание:"
     )
 
-    description = (
-        pipe(prompt, max_new_tokens=120, do_sample=True, temperature=0.9)[0]["generated_text"].split("Описание:")[-1].strip()
-    )
+    data = _chat([
+        {"role": "system", "content": SYSTEM_PROMPT_BASE},
+        {"role": "user", "content": prompt},
+    ], max_tokens=120, temperature=0.9, logprobs=False)
+    description = data["choices"][0]["message"]["content"].split("Описание:")[-1].strip()
 
     return CrisisResponse(
         title="",

@@ -1,5 +1,6 @@
 package com.startupgame.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.startupgame.dto.game.*;
 import com.startupgame.service.game.GameService;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +58,10 @@ public class GameController {
     @PostMapping("/{gameId}/evaluate-presentation")
     public EvaluateDecisionResponse evaluatePresentation(@PathVariable Long gameId, @RequestBody DecisionRequest decisionRequest) {
         return gameService.evaluatePresentation(gameId, decisionRequest);
+    }
+
+    @PostMapping("/{gameId}/generate-crisis")
+    public CrisisResponse generateCrisis(@PathVariable Long gameId) throws JsonProcessingException {
+        return gameService.generateCrisis(gameId);
     }
 }

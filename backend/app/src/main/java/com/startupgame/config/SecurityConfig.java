@@ -1,7 +1,7 @@
 package com.startupgame.config;
 
 import com.startupgame.security.JwtAuthenticationFilter;
-import com.startupgame.service.user.CustomUserDetailsService;
+import com.startupgame.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

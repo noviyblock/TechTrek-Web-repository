@@ -63,7 +63,7 @@ services:
     image: docker.elastic.co/kibana/kibana:8.13.4
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${TOKEN}
       - xpack.security.enrollment.enabled=false
     env_file:
@@ -81,8 +81,34 @@ services:
     env_file:
       - .env.logstash
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=https://techtrekgame.ru/metrics/'
+      - '--web.route-prefix=/metrics'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+
 
 volumes:
   pgdata:
   esdata:
   gradle-cache:
+  grafana-storage:

@@ -37,6 +37,10 @@ dependencies {
     // https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")

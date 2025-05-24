@@ -312,32 +312,44 @@ public class GameService {
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
         ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
         applyChanges(gameContext.getResources(), rawDelta, 1.0);
-        return buildResponse(rawDelta, gameContext.getResources(), mlResponse, new RollResponse(0, "presentation"), 1.0);
+        return buildResponse(rawDelta, gameContext.getResources(), mlResponse, new RollResponse(0, 0, 0, "presentation"), 1.0);
     }
 
     public CrisisResponse generateCrisis(Long gameId) throws JsonProcessingException {
         log.info("Generate crisis for game id: {}", gameId);
+
         GameContext gameContext = loadGameContext(gameId);
         Game game = gameContext.getGame();
+
         DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(game.getId());
         List<String> cLevels = gameModifierRepository.findCLevelNames(game.getId());
-        GenerateCrisisRequest generateCrisisRequest = new GenerateCrisisRequest(
-                game.getMlGameId().toString(),
+
+        ResourcesDTO res = new ResourcesDTO(
                 gameContext.getResources().getMoney(),
                 gameContext.getResources().getTechnicReadiness(),
                 gameContext.getResources().getProductReadiness(),
                 gameContext.getResources().getMotivation(),
-                getMonthsPassed(gameContext.getTurn()),
+                getMonthsPassed(gameContext.getTurn())
+        );
+
+        StaffsDTO staffs = new StaffsDTO(
                 devCnt.juniors(),
                 devCnt.middles(),
                 devCnt.seniors(),
                 cLevels
         );
-        ObjectMapper om = new ObjectMapper();
-        System.out.println(om.writeValueAsString(generateCrisisRequest));
+
+        GenerateCrisisRequest generateCrisisRequest = new GenerateCrisisRequest(
+                res,
+                staffs,
+                game.getMlGameId()
+        );
+
         log.debug("Generate crisis request: {}", generateCrisisRequest);
+
         return mlApiClient.generateCrisis(generateCrisisRequest);
     }
+
 
 
     private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources) {
@@ -382,7 +394,7 @@ public class GameService {
         else if (total <= 11) zone = "success";
         else zone = "critical_success";
 
-        return new RollResponse(total, zone);
+        return new RollResponse(total, d1, d2, zone);
     }
 
     private int clamp(int val) {
@@ -413,7 +425,7 @@ public class GameService {
         int seniors = Math.toIntExact(devCnt.seniors());
         System.out.println(gameContext.getGame().getMlGameId().toString());
         EvaluateDecisionRequest req = new EvaluateDecisionRequest(
-                gameContext.getGame().getMlGameId().toString(),
+                gameContext.getGame().getMlGameId(),
                 gameContext.getResources().getMoney(),
                 gameContext.getResources().getTechnicReadiness(),
                 gameContext.getResources().getProductReadiness(),

@@ -2,6 +2,7 @@ package com.startupgame.config;
 
 import com.startupgame.security.JwtAuthenticationFilter;
 import com.startupgame.security.CustomUserDetailsService;
+import com.startupgame.security.LoginRateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +44,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, LoginRateLimitFilter loginRateLimitFilter) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -58,6 +59,7 @@ public class SecurityConfig {
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

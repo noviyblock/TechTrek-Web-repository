@@ -1,26 +1,18 @@
 package com.startupgame.dto.ml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.startupgame.dto.game.ResourcesDTO;
+import com.startupgame.dto.game.StaffsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 public class GenerateCrisisRequest {
-    private String game_id;
-    private long money;
-
-    @JsonProperty("technic_readiness")
-    private int technicReadiness;
-    @JsonProperty("product_readiness")
-    private int productReadiness;
-    private int motivation;
-    @JsonProperty("months_passed")
-    private int monthsPassed;
-    private Long juniors;
-    private Long middles;
-    private Long seniors;
-    private List<String> c_levels;
+    private ResourcesDTO res;
+    private StaffsDTO staffs;
+    private UUID game_id;
 }

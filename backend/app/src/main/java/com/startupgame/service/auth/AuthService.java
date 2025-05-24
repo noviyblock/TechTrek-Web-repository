@@ -6,6 +6,8 @@ import com.startupgame.dto.auth.LoginRequest;
 import com.startupgame.dto.auth.RegisterRequest;
 import com.startupgame.entity.auth.RefreshToken;
 import com.startupgame.entity.user.User;
+import com.startupgame.exception.InvalidTokenException;
+import com.startupgame.exception.NotFoundExecption;
 import com.startupgame.exception.UserAlreadyExistsException;
 import com.startupgame.repository.auth.RefreshTokenRepository;
 import com.startupgame.repository.user.UserRepository;
@@ -103,7 +105,7 @@ public class AuthService {
      *
      * @param refreshToken JWT refresh токен, полученный от клиента
      * @return новый access токен (JWT) для авторизации пользователя
-     * @throws RuntimeException если токен не найден, невалиден или просрочен
+     * @throws NotFoundExecption если токен не найден, невалиден или просрочен
      */
     public AccessTokenResponse refreshAccessToken(String refreshToken) {
         RefreshToken entity = refreshTokenRepository.findByTokenValue(refreshToken)
@@ -118,7 +120,7 @@ public class AuthService {
 
         if (!jwtUtil.validateToken(refreshToken, userDetails)) {
             refreshTokenRepository.delete(entity);
-            throw new RuntimeException("Refresh token is invalid or expired");
+            throw new InvalidTokenException("Refresh token is invalid or expired");
         }
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
         return new AccessTokenResponse(newAccessToken);
@@ -138,7 +140,7 @@ public class AuthService {
      *
      * @param request объект {@link LoginRequest}, содержащий email и пароль пользователя
      * @return {@link AuthResponse} с access и refresh токенами
-     * @throws RuntimeException если пользователь не найден в базе после успешной аутентификации
+     * @throws NotFoundExecption если пользователь не найден в базе после успешной аутентификации
      */
     @Transactional
     public AuthResponse authenticate(LoginRequest request) {
@@ -153,7 +155,7 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
         User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundExecption("User not found"));
 
         saveRefreshToken(user, refreshToken);
 

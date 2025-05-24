@@ -17,4 +17,7 @@ public interface MLApiClient {
 
     @HttpExchange(method = "POST", url = "/game/generate_crisis")
     CrisisResponse generateCrisis(@RequestBody GenerateCrisisRequest req);
+
+    @HttpExchange(method = "POST", url = "/game/generate_missions")
+    GeneratedMissionResponse generateMission(@RequestBody GeneratedMissionRequest req);
 }

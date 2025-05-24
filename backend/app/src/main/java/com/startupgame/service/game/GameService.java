@@ -423,7 +423,6 @@ public class GameService {
         int juniors = Math.toIntExact(devCnt.juniors());
         int middles = Math.toIntExact(devCnt.middles());
         int seniors = Math.toIntExact(devCnt.seniors());
-        System.out.println(gameContext.getGame().getMlGameId().toString());
         EvaluateDecisionRequest req = new EvaluateDecisionRequest(
                 gameContext.getGame().getMlGameId(),
                 gameContext.getResources().getMoney(),

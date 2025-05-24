@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "mission")
 public class Mission {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name")
     private String name;

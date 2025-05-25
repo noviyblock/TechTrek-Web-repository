@@ -5,6 +5,7 @@ import com.startupgame.dto.game.*;
 import com.startupgame.dto.ml.*;
 import com.startupgame.entity.game.*;
 import com.startupgame.entity.user.User;
+import com.startupgame.exception.GameAlreadyFinishedException;
 import com.startupgame.exception.InsufficientFundsException;
 import com.startupgame.exception.MlServiceUnavailableException;
 import com.startupgame.repository.game.*;
@@ -291,7 +292,7 @@ public class GameService {
         log.info("Evaluate decision request: {}", gameId);
         GameContext gameContext = loadGameContext(gameId);
         if (gameContext.getGame().getEndTime() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game has already finished");
+            throw new GameAlreadyFinishedException("Game has already finished");
         }
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
         ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());

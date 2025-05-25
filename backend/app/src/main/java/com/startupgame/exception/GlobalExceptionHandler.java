@@ -65,5 +65,12 @@ public class GlobalExceptionHandler {
         log.warn("Bad credentials", ex);
         return Map.of("error", "Invalid username or password");
     }
+
+    @ExceptionHandler(GameAlreadyFinishedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleGameAlreadyFinished(GameAlreadyFinishedException gameAlreadyFinishedException) {
+        log.warn("Game already finished: {}", gameAlreadyFinishedException.getMessage());
+        return Map.of("error", gameAlreadyFinishedException.getMessage());
+    }
 }
 

@@ -1,7 +1,5 @@
 package com.startupgame.service.game;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.startupgame.client.MLApiClient;
 import com.startupgame.dto.game.*;
 import com.startupgame.dto.ml.*;
@@ -15,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +40,8 @@ public class GameService {
     private final GameModifierRepository gameModifierRepository;
     private final MLApiClient mlApiClient;
     private final GameModifierService gameModifierService;
+    private final YandexTranslateService yandexTranslateService;
+    private final GameFinalScoreRepository gameFinalScoreRepository;
     private final Random random = new Random();
 
     public List<SphereDTO> getSpheres() {
@@ -226,8 +227,8 @@ public class GameService {
         Resources resources = currentTurn.getResources();
 
         boolean isDeveloper = modifier.getModifierType() == ModifierType.JUNIOR
-                              || modifier.getModifierType() == ModifierType.MIDDLE
-                              || modifier.getModifierType() == ModifierType.SENIOR;
+                || modifier.getModifierType() == ModifierType.MIDDLE
+                || modifier.getModifierType() == ModifierType.SENIOR;
 
         boolean isOffice = modifier.getModifierType() == ModifierType.OFFICE;
 
@@ -297,6 +298,13 @@ public class GameService {
         RollWithMultiplier rollWithMultiplier = doRoll(gameId);
         double multiplier = rollWithMultiplier.getMultiplier();
         applyChanges(gameContext.getResources(), rawDelta, multiplier);
+        if (tryFinishEarly(gameContext)) {
+            return buildResponse(rawDelta,
+                    gameContext.getResources(),
+                    mlResponse,
+                    rollWithMultiplier.getRollResponse(),
+                    multiplier);
+        }
         createNextTurn(gameContext, decisionRequest.getDecision(), mlResponse, rollWithMultiplier.getRollResponse());
         //TODO POST on ml
         return buildResponse(rawDelta, gameContext.getResources(), mlResponse, rollWithMultiplier.getRollResponse(), multiplier);
@@ -312,10 +320,17 @@ public class GameService {
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
         ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
         applyChanges(gameContext.getResources(), rawDelta, 1.0);
+        if (tryFinishEarly(gameContext)) {
+            return buildResponse(rawDelta,
+                    gameContext.getResources(),
+                    mlResponse,
+                    null,
+                    1.0);
+        }
         return buildResponse(rawDelta, gameContext.getResources(), mlResponse, new RollResponse(0, 0, 0, "presentation"), 1.0);
     }
 
-    public CrisisResponse generateCrisis(Long gameId) throws JsonProcessingException {
+    public CrisisResponse generateCrisis(Long gameId) {
         log.info("Generate crisis for game id: {}", gameId);
 
         GameContext gameContext = loadGameContext(gameId);
@@ -347,15 +362,100 @@ public class GameService {
 
         log.debug("Generate crisis request: {}", generateCrisisRequest);
 
-        return mlApiClient.generateCrisis(generateCrisisRequest);
+        CrisisResponse response = mlApiClient.generateCrisis(generateCrisisRequest);
+
+        if (response.getDescription() != null && !response.getDescription().isBlank()) {
+            String translated = yandexTranslateService.translateText(response.getDescription(), "ru");
+            response.setDescription(translated);
+        }
+
+        return response;
     }
 
+    @Transactional
+    public void finalizeGame(Long gameId) {
+        log.info("Finalizing game {}", gameId);
+
+        GameContext ctx = loadGameContext(gameId);
+        Game game = ctx.getGame();
+
+        if (game.getEndTime() == null) {
+            game.setEndTime(LocalDateTime.now());
+            gameRepository.save(game);
+        }
+
+        int minMotivation = turnRepository.findAllByGameId(gameId).stream()
+                .mapToInt(t -> resourcesRepository.findById(t.getResources().getId())
+                        .orElseThrow()
+                        .getMotivation())
+                .min()
+                .orElse(ctx.getResources().getMotivation());
+
+        boolean motivationNeverBelow50 = minMotivation >= 50;
+
+        int monthsPassed = getMonthsPassed(ctx.getTurn());
+
+        FinalScoreDTO score = FinalScoreCalculator.calculate(
+                ctx.getResources().getMoney(),
+                ctx.getResources().getTechnicReadiness(),
+                ctx.getResources().getProductReadiness(),
+                ctx.getResources().getMotivation(),
+                monthsPassed,
+                false, //TODO
+                motivationNeverBelow50
+        );
+
+        GameFinalScore gameFinalScore = getGameFinalScore(game, score);
+        gameFinalScoreRepository.save(gameFinalScore);
+
+        game.setScore(score.totalScore());
+        gameRepository.save(game);
+
+    }
+
+    private static GameFinalScore getGameFinalScore(Game game, FinalScoreDTO score) {
+        GameFinalScore gameFinalScore = new GameFinalScore();
+        gameFinalScore.setGame(game);
+        gameFinalScore.setMoneyScore(score.moneyScore());
+        gameFinalScore.setTechScore(score.techScore());
+        gameFinalScore.setProductScore(score.productScore());
+        gameFinalScore.setMotivationScore(score.motivationScore());
+        gameFinalScore.setTimeScore(score.timeScore());
+        gameFinalScore.setBonusScore(score.bonusScore());
+        gameFinalScore.setTotalScore(score.totalScore());
+        return gameFinalScore;
+    }
+
+    private boolean tryFinishEarly(GameContext ctx) {
+        Resources resources = ctx.getResources();
+        if (resources.getTechnicReadiness() >= 100 && resources.getProductReadiness() >= 100) {
+            if (ctx.getGame().getEndTime() == null) {
+                ctx.getGame().setEndTime(LocalDateTime.now());
+                gameRepository.save(ctx.getGame());
+            }
+            endGameWithTransaction(ctx.getGame().getId());
+            return true;
+        }
+        return false;
+    }
 
 
     private GameStateDTO buildGameStateDTO(Game game, Turn turn, Resources resources) {
         DeveloperCounts devCnt = gameModifierRepository.findDeveloperCounts(game.getId());
         Modifier office = gameModifierRepository.findActiveOffice(game.getId()).orElse(null);
         List<String> cLevels = gameModifierRepository.findCLevelNames(game.getId());
+
+        FinalScoreDTO finalScore = gameFinalScoreRepository.findByGameId(game.getId())
+                .map(gfs -> FinalScoreDTO.builder()
+                        .moneyScore(gfs.getMoneyScore())
+                        .techScore(gfs.getTechScore())
+                        .productScore(gfs.getProductScore())
+                        .motivationScore(gfs.getMotivationScore())
+                        .timeScore(gfs.getTimeScore())
+                        .bonusScore(gfs.getBonusScore())
+                        .totalScore(gfs.getTotalScore())
+                        .build())
+                .orElse(null);
 
         assert office != null;
         return GameStateDTO.builder()
@@ -376,6 +476,7 @@ public class GameService {
                 .superEmployees(cLevels)
                 .officeName(office.getName())
                 .endTime(game.getEndTime())
+                .finalScore(finalScore)
                 .build();
     }
 
@@ -440,6 +541,9 @@ public class GameService {
     }
 
     private void createNextTurn(GameContext gameContext, String decision, EvaluateDecisionResult mlResponse, RollResponse roll) {
+        if (gameContext.getGame().getEndTime() != null) {
+            return;
+        }
         int nextNumber = gameContext.getTurn().getTurnNumber() + 1;
         if (nextNumber > 18) {
             return;
@@ -461,6 +565,7 @@ public class GameService {
         if (nextNumber == 18) {
             gameContext.getGame().setEndTime(LocalDateTime.now());
             gameRepository.save(gameContext.getGame());
+            endGameWithTransaction(gameContext.getGame().getId());
         }
     }
 
@@ -541,5 +646,10 @@ public class GameService {
         int s2 = Math.min(Math.max(tn - 6, 0), 6);
         int s3 = Math.min(Math.max(tn - 12, 0), 6);
         return s1 + s2 * 3 + s3 * 6;
+    }
+
+    private void endGameWithTransaction(Long gameId) {
+        GameService self = (GameService) AopContext.currentProxy();
+        self.finalizeGame(gameId);
     }
 }

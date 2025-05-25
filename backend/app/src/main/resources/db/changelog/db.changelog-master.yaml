@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/db.changelog-load-modifiers.yaml
   - include:
       file: db/changelog/db.changelog-load-spheres-missions.yaml
+#  - include:
+#      file: db/changelog/game-modifier-indexes.yaml
+  - include:
+      file: db/changelog/add-game-final-score-table.yaml

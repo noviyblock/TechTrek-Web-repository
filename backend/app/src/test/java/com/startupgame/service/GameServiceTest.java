@@ -41,7 +41,7 @@ class GameServiceTest {
     @BeforeEach
     void setUp() {
         User user = User.builder().id(1L).username("tester").build();
-        Mission mission = Mission.builder().id(42L).missionName("Demo mission").build();
+        Mission mission = Mission.builder().id(42L).name("Demo mission").build();
 
         lenient().when(userRepository.findByUsername("tester")).thenReturn(Optional.of(user));
         lenient().when(missionRepository.findById(42L)).thenReturn(Optional.of(mission));

@@ -31,4 +31,5 @@ public class GameStateDTO {
     private LocalDateTime endTime;
 
     private String situationText;
+    private FinalScoreDTO finalScore;
 }

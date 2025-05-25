@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-game-final-score
+      author: Nick Menshikov
+      changes:
+        - createTable:
+            tableName: game_final_score
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: game_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column: { name: money_score, type: integer, constraints: { nullable: false } }
+              - column: { name: tech_score, type: integer, constraints: { nullable: false } }
+              - column: { name: product_score, type: integer, constraints: { nullable: false } }
+              - column: { name: motivation_score, type: integer, constraints: { nullable: false } }
+              - column: { name: time_score, type: integer, constraints: { nullable: false } }
+              - column: { name: bonus_score, type: integer, constraints: { nullable: false } }
+              - column: { name: total_score, type: integer, constraints: { nullable: false } }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+
+        - addForeignKeyConstraint:
+            baseTableName: game_final_score
+            baseColumnNames: game_id
+            referencedTableName: game
+            referencedColumnNames: id
+            constraintName: fk_game_final_score_game
+            onDelete: CASCADE
+
+      rollback:
+        - dropTable: { tableName: game_final_score }

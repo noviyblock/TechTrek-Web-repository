@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
+                                "/api/auth/verify-otp",
                                 "/api/auth/status",
                                 "/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()

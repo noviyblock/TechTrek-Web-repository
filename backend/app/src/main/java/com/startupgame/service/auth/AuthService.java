@@ -25,6 +25,31 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.MDC;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.startupgame.dto.auth.AccessTokenResponse;
+import com.startupgame.dto.auth.AuthResponse;
+import com.startupgame.dto.auth.LoginRequest;
+import com.startupgame.dto.auth.RegisterRequest;
+import com.startupgame.entity.auth.RefreshToken;
+import com.startupgame.entity.user.User;
+import com.startupgame.exception.UserAlreadyExistsException;
+import com.startupgame.repository.auth.RefreshTokenRepository;
+import com.startupgame.repository.user.UserRepository;
+import com.startupgame.security.JwtUtil;
+
+import jakarta.transaction.Transactional;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 
 @Service
 @Data
@@ -38,6 +63,8 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailService emailService;
+    private final OtpService otpService;
 
 
     /**
@@ -75,18 +102,25 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
-        MDC.put("username", request.getUsername());
-        MDC.put("userId", String.valueOf(user.getId()));
-        log.info("User '{}' successfully registered", user.getUsername());
+        // MDC.put("username", request.getUsername());
+        // MDC.put("userId", String.valueOf(user.getId()));
+        // log.info("User '{}' successfully registered", user.getUsername());
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+        // UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
 
-        String accessToken = jwtUtil.generateAccessToken(userDetails);
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        // String accessToken = jwtUtil.generateAccessToken(userDetails);
+        // String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-        saveRefreshToken(user, refreshToken);
-        MDC.clear();
-        return new AuthResponse(accessToken, refreshToken);
+        // saveRefreshToken(user, refreshToken);
+        // MDC.clear();
+        // return new AuthResponse(accessToken, refreshToken);
+
+        // Генерация и отправка OTP
+        String otp = otpService.generateOtp(user.getEmail());
+        emailService.sendOtpEmail(user.getEmail(), otp);
+        log.info("OTP sent to email: {}", user.getEmail());
+
+        return new AuthResponse(null, null); // Токены ещё не выдаём
     }
 
     /**

@@ -67,7 +67,7 @@ services:
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${TOKEN}
       - xpack.security.enrollment.enabled=false
     env_file:
-      - .env.kibana
+      - .env
     ports: [ "5601:5601" ]
 
   logstash:
@@ -79,7 +79,7 @@ services:
     environment:
       - xpack.monitoring.enabled=false
     env_file:
-      - .env.logstash
+      - .env
 
   prometheus:
     image: prom/prometheus

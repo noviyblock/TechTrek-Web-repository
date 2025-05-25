@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: game-modifier-indexes
+      author: Nick Menshikov
+      changes:
+        - createIndex:
+            tableName: game_modifier
+            indexName: idx_gamemodifier_game_id
+            columns:
+              - column:
+                  name: game_id
+
+        - createIndex:
+            tableName: game_modifier
+            indexName: idx_gamemodifier_game_modifier
+            columns:
+              - column:
+                  name: game_id
+              - column:
+                  name: modifier_id
+
+        - createIndex:
+            tableName: game_modifier
+            indexName: idx_gamemodifier_game_active
+            columns:
+              - column:
+                  name: game_id
+              - column:
+                  name: active
+
+        - createIndex:
+            tableName: game_modifier
+            indexName: idx_gamemodifier_game_active_id
+            columns:
+              - column:
+                  name: game_id
+              - column:
+                  name: active
+              - column:
+                  name: id
+
+        - createIndex:
+            tableName: modifier
+            indexName: idx_modifier_type
+            columns:
+              - column:
+                  name: modifier_type

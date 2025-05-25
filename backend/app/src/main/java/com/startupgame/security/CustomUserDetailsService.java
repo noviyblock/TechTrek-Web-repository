@@ -1,4 +1,4 @@
-package com.startupgame.service.user;
+package com.startupgame.security;
 
 import com.startupgame.entity.user.User;
 import com.startupgame.repository.user.UserRepository;

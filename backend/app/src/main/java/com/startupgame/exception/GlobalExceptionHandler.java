@@ -13,10 +13,17 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler(NotFoundExecption.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> notFound(EntityNotFoundException ex) {
-        log.info("Entity not found: {}", ex.getMessage());
+        log.warn("Entity not found: {}", ex.getMessage());
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> userAlreadyExists(UserAlreadyExistsException ex) {
+        log.warn("User already exists: {}", ex.getMessage());
         return Map.of("error", ex.getMessage());
     }
 
@@ -57,6 +64,13 @@ public class GlobalExceptionHandler {
     public Map<String,String> handleBadCredentials(BadCredentialsException ex) {
         log.warn("Bad credentials", ex);
         return Map.of("error", "Invalid username or password");
+    }
+
+    @ExceptionHandler(GameAlreadyFinishedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleGameAlreadyFinished(GameAlreadyFinishedException gameAlreadyFinishedException) {
+        log.warn("Game already finished: {}", gameAlreadyFinishedException.getMessage());
+        return Map.of("error", gameAlreadyFinishedException.getMessage());
     }
 }
 

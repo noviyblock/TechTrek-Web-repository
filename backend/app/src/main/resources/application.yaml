@@ -38,5 +38,11 @@ management:
       export:
         enabled: true
 
+yandex:
+  translate:
+    api-key: ${YANDEX_API_KEY}
+    folder-id: ${YANDEX_FOLDER_ID}
+    endpoint: "https://translate.api.cloud.yandex.net/translate/v2/translate"
+
 server:
   port: 8080

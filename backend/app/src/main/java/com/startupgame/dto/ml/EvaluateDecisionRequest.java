@@ -1,18 +1,24 @@
 package com.startupgame.dto.ml;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 public class EvaluateDecisionRequest {
-    private String game_id;
+    private UUID game_id;
     private long money;
+    @JsonProperty("technic_readiness")
     private int technicReadiness;
+    @JsonProperty("product_readiness")
     private int productReadiness;
     private int motivation;
+    @JsonProperty("months_passed")
+    private int monthsPassed;
     private int juniors;
     private int middles;
     private int seniors;

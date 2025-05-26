@@ -3,8 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import BuyModifier from "../molecule/BuyCard";
 import { ModifierProps } from "../../shared/Types";
 
-const BuyCardCarousel: React.FC<{ modifiers: ModifierProps[] }> = ({
+const BuyCardCarousel: React.FC<{ modifiers: ModifierProps[]; updateState: () => void }> = ({
   modifiers,
+  updateState,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -33,7 +34,6 @@ const BuyCardCarousel: React.FC<{ modifiers: ModifierProps[] }> = ({
 
   return (
     <div className="w-full flex items-center gap-4">
-      {/* Левая кнопка */}
       {isOverflowing && (
         <button
           className="text-white hover:text-gray-400 p-2 rounded-full"
@@ -43,7 +43,6 @@ const BuyCardCarousel: React.FC<{ modifiers: ModifierProps[] }> = ({
         </button>
       )}
 
-      {/* Карусель */}
       <div
         ref={scrollRef}
         className={
@@ -58,7 +57,7 @@ const BuyCardCarousel: React.FC<{ modifiers: ModifierProps[] }> = ({
             className="flex-shrink-0"
             style={{ scrollSnapAlign: "start" }}
           >
-            <BuyModifier {...card} />
+            <BuyModifier {...card} updateState={updateState} />
           </div>
         ))}
       </div>

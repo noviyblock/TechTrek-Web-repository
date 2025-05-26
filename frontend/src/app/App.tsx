@@ -22,6 +22,7 @@ import SectionBuyCard, {sectionType} from "../atomic/molecule/SectionBuyCard";
 import BuyCardCarousel from "../atomic/organism/BuyCardCarousel";
 import MarketSelection from "../atomic/molecule/MarketSelection";
 import Market from "../atomic/organism/Market";
+import CrisisDecision from "../atomic/molecule/CrisisDecision";
 
 function App() {
   const [a, b] = useState<string>("");
@@ -81,7 +82,7 @@ function App() {
           <Cube amount={3} rotation={0}></Cube>
         }/>
 
-        <Route path="/test" element={<div className="bg-black h-screen"><Market stage={1} gameId={79} onClick={() => {}}></Market></div>} />
+        <Route path="/test" element={<div className="bg-black h-screen"><Cube amount={3} rotation={100}></Cube></div>} />
       </Routes>
     </Router>
   );

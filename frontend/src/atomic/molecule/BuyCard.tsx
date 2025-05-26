@@ -16,7 +16,7 @@ const buyModifierDescription: Record<string, string> = {
   TECH_HUB: "Современный офис с ресурсами для роста и инноваций",
 };
 
-const BuyModifier: React.FC<ModifierProps> = ({ name, purchaseCost, upkeepCost, id, gameId}) => (
+const BuyModifier: React.FC<ModifierProps> = ({ name, purchaseCost, upkeepCost, id, gameId, updateState}) => (
     <div
       className="flex flex-col gap-3 font-inter text-white rounded-3xl p-4 overflow-hidden h-full"
       style={{ background: Color["Default"], width: 238 }}
@@ -40,7 +40,7 @@ const BuyModifier: React.FC<ModifierProps> = ({ name, purchaseCost, upkeepCost, 
         <ProfileButton height={30} color="LightGray">
           Уволить
         </ProfileButton>
-        <ProfileButton height={30} color="Primary" onClick={async () => {await purchaseModifier(gameId, id)}}>
+        <ProfileButton height={30} color="Primary" onClick={async () => {await purchaseModifier(gameId, id); updateState()}}>
           Купить
         </ProfileButton>
       </div>

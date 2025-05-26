@@ -37,6 +37,8 @@ export interface GameState {
   numberOfOffices: number;
 
   situationText: string;
+
+  finalScore: FinalScore;
 }
 
 interface DecisionRequest {
@@ -58,8 +60,20 @@ export interface DecisionResponse {
   qualityScore: number;
   roll: {
     diceTotal: number;
+    firstCubeRoll: number;
+    secondCubeRoll: number;
     zone: string;
   };
+}
+
+export interface FinalScore {
+  moneyScore: number;
+  techScore: number;
+  productScore: number;
+  motivationScore: number;
+  timeScore: number;
+  bonusScore: number;
+  totalScore: number;
 }
 
 export interface ModifierResponse {
@@ -74,6 +88,18 @@ export interface ModifierResponse {
   stageAllowed: number;
 
   owned: boolean;
+}
+
+export interface PurchaseResponse {
+  gameId: number;
+  modifierId: number;
+  remainingMoney: number;
+  ownedModifiers: string[];
+  quantity: number;
+}
+
+export interface CrisisResponse {
+  description: string;
 }
 
 export const getSpheres = async () => {
@@ -105,6 +131,15 @@ export const evaluateDesicion = async (gameId: number, req: string) => {
   ).data;
 };
 
+export const evaluatePresentation = async (gameId: number, req: string) => {
+  return (
+    await axiosInstance.post<DecisionResponse>(
+      `/api/game/${gameId}/evaluate-presentation`,
+      { decision: req }
+    )
+  ).data;
+};
+
 export const state = async (gameId: number) => {
   return (await axiosInstance.get<GameState>(`/api/game/${gameId}/state`)).data;
 };
@@ -117,9 +152,17 @@ export const modifiers = async (gameId: number) => {
 
 export const purchaseModifier = async (gameId: number, modifierId: number) => {
   return (
-    await axiosInstance.post<ModifierResponse[]>(
+    await axiosInstance.post<PurchaseResponse>(
       `/api/game/${gameId}/modifiers`,
       { modifierId }
+    )
+  ).data;
+};
+
+export const generateCrisis = async (gameId: number) => {
+  return (
+    await axiosInstance.post<CrisisResponse>(
+      `/api/game/${gameId}/generate-crisis`
     )
   ).data;
 };

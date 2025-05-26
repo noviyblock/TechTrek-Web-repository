@@ -255,5 +255,14 @@ export const nullGameState: GameState = {
   seniors: 0,
   superEmployees: [],
   numberOfOffices: 0,
-  situationText: ""
-}
+  situationText: "",
+  finalScore: {
+    moneyScore: 0,
+    techScore: 0,
+    productScore: 0,
+    motivationScore: 0,
+    timeScore: 0,
+    bonusScore: 0,
+    totalScore: 0,
+  },
+};

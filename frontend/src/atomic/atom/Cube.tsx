@@ -4,7 +4,7 @@ const Cube: React.FC<{ amount: number; rotation: number }> = ({
 }) => {
   return (
     <div
-      className={`absolute p-6 mt-0 ml-0 transiotion-all duration-70 border-solid border-2 bg-white h-fit`}
+      className={`absolute p-6 mt-0 ml-0 transition-all duration-700 border-solid border-2 bg-white h-fit`}
       style={{transform: `rotate(${rotation}deg)`}}
     >
       <div

@@ -4,27 +4,46 @@ import MissionPage from "./MissionPage";
 import CommandNamePage from "./CommandNamePage";
 import MainScreenLayout from "../template/MainScreenLayout";
 import { ChoosableTextProps } from "../../shared/Types";
-import { GameState, getMissions, startGame } from "../../api/Game";
+import { GameState, getMissions, startGame, state } from "../../api/Game";
 import { nullGameState } from "../../shared/constants";
 import { useLocalStorage } from "../../LocalStorage";
+import { GameFields, GameService } from "../../api/services/GameService";
+
 
 const GamePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useLocalStorage<Pages>(
-    "game_currentPage",
+    GameFields.gamePage,
     "spherePage"
   );
-  const [sphere, setSphere] = useLocalStorage<number>("game_sphere", 0);
-  const [mission, setMission] = useLocalStorage<number>("game_mission", 0);
+  const [sphere, setSphere] = useLocalStorage<number>(GameFields.sphere, 0);
+  const [mission, setMission] = useLocalStorage<number>(GameFields.mission, 0);
   const [missions, setMissions] = useState<ChoosableTextProps[]>([]);
   const [commandName, setCommandName] = useLocalStorage<string>(
-    "game_commandName",
+    GameFields.commandName,
     ""
   );
-  const [gameState, setGameState] = useLocalStorage<GameState>("game_state", nullGameState);
+  const gameId = GameService.getGameId();
+  const [gameState, setGameState] = useState<GameState>(nullGameState);
 
   useEffect(() => {
-    if (sphere === 0) return;
-  
+    if (gameId === undefined) {
+      GameService.reset();
+      return;
+    };
+
+    const fetchGameState = async (gameId: number) => {
+      const result = await state(gameId);
+      setGameState(result);
+    };
+
+    fetchGameState(gameId);
+    GameService.setGameId(gameId);
+    setCurrentPage("mainScreen");
+  }, [gameId]);
+
+  useEffect(() => {
+    if (sphere === 0 || gameId) return;
+
     const fetchMissions = async (sphere: number) => {
       const response = await getMissions(sphere);
       setMissions(
@@ -35,20 +54,36 @@ const GamePage: React.FC = () => {
         }))
       );
     };
-  
+
     fetchMissions(sphere);
   }, [sphere]);
 
   useEffect(() => {
-    if (!mission || !commandName || currentPage !== "mainScreen" || gameState !== nullGameState) return;
-  
+    if (
+      !mission ||
+      !commandName ||
+      currentPage !== "mainScreen" ||
+      gameState !== nullGameState ||
+      gameId
+    )
+      return;
+
     const fetchStartGame = async () => {
-      const result = await startGame({ missionId: mission, companyName: commandName });
+      const result = await startGame({
+        missionId: mission,
+        companyName: commandName,
+      });
       setGameState(result);
     };
-  
+
     fetchStartGame();
   }, [mission, commandName, currentPage]);
+
+  useEffect(() => {
+    if (gameState === nullGameState)
+      return;
+    GameService.setGameId(gameState.gameId);
+  }, [gameState])
 
   const gamePages = {
     spherePage: (

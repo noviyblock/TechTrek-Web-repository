@@ -107,4 +107,5 @@ export interface ContrainerListProps {
 
 export interface ModifierProps extends ModifierResponse {
   gameId: number;
+  updateState: () => void;
 } 

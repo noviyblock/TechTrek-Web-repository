@@ -6,18 +6,23 @@ import { ModifierProps } from "../../shared/Types";
 import { modifiers } from "../../api/Game";
 
 // todo stage
-const Market: React.FC<{ gameId: number; stage: number; onClick: React.MouseEventHandler<HTMLButtonElement>; }> = ({
-  gameId,
-  stage,
-  onClick
-}) => {
+const Market: React.FC<{
+  gameId: number;
+  stage: number;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  updateState: () => void;
+}> = ({ gameId, stage, onClick, updateState }) => {
   const [modifierList, setModifiers] = useState<ModifierProps[]>([]);
 
   useEffect(() => {
     const fetchModifiers = async (gameId: number) => {
       const response = await modifiers(gameId);
-      
-      setModifiers(response.map(value => {return {gameId, ...value}}));
+
+      setModifiers(
+        response.map((value) => {
+          return { updateState, gameId, ...value };
+        })
+      );
     };
 
     fetchModifiers(gameId);
@@ -40,31 +45,46 @@ const Market: React.FC<{ gameId: number; stage: number; onClick: React.MouseEven
     ),
     [sectionType.DEVELOPER]: (
       <MarketBuy
+        updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");
         }}
         section={sectionType.DEVELOPER}
-        modifiers={modifierList.filter(
-          (value) => value.type !== "OFFICE" && value.type !== "C_LEVEL"
-        )}
+        modifiers={modifierList
+          .filter(
+            (value) => value.type !== "OFFICE" && value.type !== "C_LEVEL"
+          )
+          .map((value) => {
+            return { ...value, gameId };
+          })}
       ></MarketBuy>
     ),
     [sectionType.C_LEVEL]: (
       <MarketBuy
+        updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");
         }}
         section={sectionType.C_LEVEL}
-        modifiers={modifierList.filter((value) => value.type === "C_LEVEL")}
+        modifiers={modifierList
+          .filter((value) => value.type === "C_LEVEL")
+          .map((value) => {
+            return { ...value, gameId };
+          })}
       ></MarketBuy>
     ),
     [sectionType.OFFICE]: (
       <MarketBuy
+        updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");
         }}
         section={sectionType.OFFICE}
-        modifiers={modifierList.filter((value) => value.type === "OFFICE")}
+        modifiers={modifierList
+          .filter((value) => value.type === "OFFICE")
+          .map((value) => {
+            return { ...value, gameId };
+          })}
       ></MarketBuy>
     ),
   };

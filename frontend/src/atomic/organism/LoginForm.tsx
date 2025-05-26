@@ -15,7 +15,7 @@ const LoginForm: React.FC<{ width: string }> = ({ width }) => {
       e.preventDefault();
       const response = await login({ email, password });
       if (response === 200) {
-        navigate("/game");
+        navigate("/profile");
       }
     } catch (error) {
       console.error(error);

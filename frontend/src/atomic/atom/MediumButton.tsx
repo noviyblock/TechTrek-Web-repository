@@ -7,15 +7,15 @@ const MediumButton: React.FC<ButtonProps> = ({
   color = "Default",
   width,
   form,
+  height=4,
 }) => (
   <button
     onClick={onClick}
     style={{
       background: Color[color],
       color: `${TextColor[color]}`,
-      width: width ?? "66%",
     }}
-    className="p-4 rounded-full font-inter text-sm"
+    className="p-4 rounded-full font-inter text-sm w-fit max-w-[66vw]"
     form={form}
     type={form ? "submit" : "button"}
   >

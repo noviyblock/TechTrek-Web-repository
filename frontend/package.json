@@ -16,10 +16,12 @@
     "@types/react-dom": "^19.0.4",
     "axios": "^1.9.0",
     "cors": "^2.8.5",
+    "lucide-react": "^0.511.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0",
     "react-scripts": "5.0.1",
+    "react-speech-recognition": "^4.0.1",
     "typescript": "^4.9.5",
     "universal-cookie": "^8.0.1",
     "web-vitals": "^2.1.4"

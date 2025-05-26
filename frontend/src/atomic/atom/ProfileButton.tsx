@@ -1,20 +1,23 @@
-import { Color, TextColor } from "../../shared/Color";
 import { ButtonProps } from "../../shared/Types";
+import { Color, TextColor } from "../../shared/Color";
 
-const LargeButton: React.FC<ButtonProps> = ({
+const ProfileButton: React.FC<ButtonProps> = ({
   children,
   onClick,
   color = "Default",
   width,
   form,
+  height=4,
 }) => (
   <button
     onClick={onClick}
     style={{
       background: Color[color],
+      height: height,
       color: `${TextColor[color]}`,
+      width: width ?? "66%",
     }}
-    className="p-5 rounded-full font-inter text-base w-fit max-w-[99vw]"
+    className="rounded-full font-inter text-sm"
     form={form}
     type={form ? "submit" : "button"}
   >
@@ -22,4 +25,4 @@ const LargeButton: React.FC<ButtonProps> = ({
   </button>
 );
 
-export default LargeButton;
+export default ProfileButton;

@@ -17,6 +17,11 @@ import HeadedBlock from "../atomic/atom/HeadedBlock";
 import DiceRoller from "../atomic/organism/DiceRoller";
 import DiceResult from "../atomic/organism/DiceResult";
 import Overlay from "../atomic/molecule/Overlay";
+import BuyModifier from "../atomic/molecule/BuyCard";
+import SectionBuyCard, {sectionType} from "../atomic/molecule/SectionBuyCard";
+import BuyCardCarousel from "../atomic/organism/BuyCardCarousel";
+import MarketSelection from "../atomic/molecule/MarketSelection";
+import Market from "../atomic/organism/Market";
 
 function App() {
   const [a, b] = useState<string>("");
@@ -76,7 +81,7 @@ function App() {
           <Cube amount={3} rotation={0}></Cube>
         }/>
 
-        <Route path="/test" element={<div></div>} />
+        <Route path="/test" element={<div className="bg-black h-screen"><Market stage={1} gameId={79} onClick={() => {}}></Market></div>} />
       </Routes>
     </Router>
   );

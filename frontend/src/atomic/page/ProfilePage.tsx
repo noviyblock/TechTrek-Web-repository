@@ -3,6 +3,12 @@ import { User } from "../../api/services/UserService";
 import { getUser } from "../../api/User";
 import MediumButton from "../atom/MediumButton";
 import { useNavigate } from "react-router-dom";
+import { Color } from "../../shared/Color";
+import TitledText from "../atom/TitledText";
+import ProfileBlock from "../organism/ProfileBlock";
+import Block from "../molecule/Block";
+import ProfileGame from "../organism/ProfileGame";
+import GamesHistory from "./GamesHistory";
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User>({
@@ -23,18 +29,27 @@ const ProfilePage: React.FC = () => {
 
   const newGameOnClick = () => {
     navigate("/game");
-  }
+  };
 
   useEffect(() => {
     getUserInfo();
-  });
+  }, []);
 
   return (
-    <div>
-      <div>
-        username: {user.username}, email: {user.email}, games: {JSON.stringify(user.games)}
-      </div>
-      <MediumButton onClick={newGameOnClick}>New game</MediumButton>
+    <div
+      className="flex flex-row gap-1 h-screen w-screen overflow-clip"
+      style={{ background: Color.DefaultAccent }}
+    >
+      <ProfileBlock username={user.username} email={user.email} />
+      <Block grow={1} h='h-screen'>
+        <div className="flex flex-col gap-6">
+          <ProfileGame></ProfileGame>
+          <div>
+            <hr className="-mx-4" style={{ borderColor: Color["Gray"] }} />
+          </div>
+            <GamesHistory games={user.games}></GamesHistory>
+        </div>
+      </Block>
     </div>
   );
 };

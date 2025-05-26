@@ -1,3 +1,4 @@
+import { ModifierResponse } from "../api/Game";
 import { Color } from "./Color";
 import { Active, Employee, Modificator } from "./GameTypes";
 
@@ -5,8 +6,9 @@ export interface ButtonProps {
   children?: React.ReactNode;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   color?: keyof typeof Color;
-  width?: number;
+  width?: string;
   form?: string;
+  height?: number;
 }
 
 export interface InputProps {
@@ -102,3 +104,7 @@ export interface StatisticsProps {
 export interface ContrainerListProps {
   elements: React.ReactNode[];
 }
+
+export interface ModifierProps extends ModifierResponse {
+  gameId: number;
+} 

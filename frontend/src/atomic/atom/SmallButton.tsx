@@ -12,9 +12,8 @@ const SmallButton: React.FC<ButtonProps> = ({
     style={{
       background: Color[color],
       color: `${TextColor[color]}`,
-      width: width ?? "33%",
     }}
-    className="p-3 rounded-full font-inter text-xs"
+    className="p-3 rounded-full font-inter text-xs w-fit max-w-[33vw]"
     form={form}
     type={form ? "submit" : "button"}
     onClick={onClick}

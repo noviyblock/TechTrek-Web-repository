@@ -9,6 +9,8 @@ export enum Color {
   White = "#FFFFFF",
   Black = "#000000",
   Progress = "#E4E4E7",
+  Gray = "#272729",
+  LightGray = "#888888",
 }
 
 export const TextColor: Record<keyof typeof Color, string> = {
@@ -22,6 +24,8 @@ export const TextColor: Record<keyof typeof Color, string> = {
   White: "#000000",
   Black: "#FFFFFF",
   Progress: "#FFFFFF",
+  Gray: "#FFFFFF",
+  LightGray: "#FFFFFF"
 } as any;
 
 export const deafultBackground = "#010000";

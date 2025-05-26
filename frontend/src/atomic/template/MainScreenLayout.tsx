@@ -24,6 +24,8 @@ import { useEffect, useState } from "react";
 import DiceRoller from "../organism/DiceRoller";
 import DiceResult from "../organism/DiceResult";
 import Overlay from "../molecule/Overlay";
+import { useLocalStorage } from "../../LocalStorage";
+import Market from "../organism/Market";
 
 const MainScreenLayout: React.FC<{
   game: GameState;
@@ -71,12 +73,22 @@ const MainScreenLayout: React.FC<{
     qualityScore: 82,
     roll: "10",
   };
-
-  const [crisisDecision, setCrisisDecision] = useState<string>("");
-  const [presentationDecision, setPresentationDecision] = useState<string>("");
-  const [currentStage, setCurrentStage] = useState<Stages>("crisis");
-  const [decision, setDecision] = useState<DecisionResponse>();
-  const [newGame, setNewGame] = useState<GameState>(game);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [crisisDecision, setCrisisDecision] = useLocalStorage<string>(
+    "crisisDecision",
+    ""
+  );
+  const [presentationDecision, setPresentationDecision] =
+    useLocalStorage<string>("presentationDecision", "");
+  const [currentStage, setCurrentStage] = useLocalStorage<Stages>(
+    "currentStage",
+    "crisis"
+  );
+  const [decision, setDecision] = useLocalStorage<DecisionResponse | undefined>(
+    "decision",
+    undefined
+  );
+  const [newGame, setNewGame] = useLocalStorage<GameState>("newGame", game);
 
   const stage = {
     crisis: (
@@ -95,7 +107,7 @@ const MainScreenLayout: React.FC<{
       </div>
     ),
     diceRoll: (
-      <div className="items-center">
+      <div className="flex justify-center items-center w-full h-full">
         <DiceRoller
           onClick={() => {
             //xddddddddddd
@@ -136,27 +148,9 @@ const MainScreenLayout: React.FC<{
           inputValue={presentationDecision}
           inputOnChange={setPresentationDecision}
           submit={() => {
-            setCurrentStage("presentationResult");
+            setShowOverlay(true);
           }}
         />
-      </div>
-    ),
-    presentationResult: (
-      <div>
-        <Overlay setOpen={() => {}} color="#284234" strokeColor="#19C964">
-          <div className="flex flex-col gap-4 font-inter">
-            <div className="text-2xl font-extrabold">
-              Ваш проект нравится инвесторам!
-            </div>
-            <div className="text-base font-extrabold">Вы получаете:</div>
-            <div>
-              Кризис показал, что команда умеет быстро реагировать и брать
-              ответственность. Пользователи оценили честность, доверие удалось
-              сохранить. Внутри команды стали строже относиться к проверкам и
-              тестированию.
-            </div>
-          </div>
-        </Overlay>
       </div>
     ),
   };
@@ -209,6 +203,27 @@ const MainScreenLayout: React.FC<{
           </div>
         </Block>
       </div>
+      {showOverlay && (
+        <Overlay
+          setOpen={() => setShowOverlay(false)}
+          color="#171719"
+          strokeColor="#171719"
+        >
+          {/* <div className="flex flex-col gap-4 font-inter">
+            <div className="text-2xl font-extrabold">
+              Ваш проект нравится инвесторам!
+            </div>
+            <div className="text-base font-extrabold">Вы получаете:</div>
+            <div>
+              Кризис показал, что команда умеет быстро реагировать и брать
+              ответственность. Пользователи оценили честность, доверие удалось
+              сохранить. Внутри команды стали строже относиться к проверкам и
+              тестированию.
+            </div>
+          </div> */}
+          <Market gameId={game.gameId} stage={game.stage} onClick={() => setShowOverlay(false)}></Market>
+        </Overlay>
+      )}
     </div>
   );
 };

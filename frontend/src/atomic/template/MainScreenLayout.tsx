@@ -15,6 +15,8 @@ import {
   DecisionResponse,
   GameState,
   evaluateDesicion,
+  evaluatePresentation,
+  generateCrisis,
   state,
 } from "../../api/Game";
 import GameFieldValue from "../atom/GameFieldValue";
@@ -24,139 +26,172 @@ import { useEffect, useState } from "react";
 import DiceRoller from "../organism/DiceRoller";
 import DiceResult from "../organism/DiceResult";
 import Overlay from "../molecule/Overlay";
+import { useLocalStorage } from "../../LocalStorage";
+import Market from "../organism/Market";
+import CrisisDecision from "../molecule/CrisisDecision";
+import { GameFields } from "../../api/services/GameService";
 
 const MainScreenLayout: React.FC<{
   game: GameState;
   children: React.ReactNode;
 }> = ({ game, children }) => {
-  const gameS: GameState = {
-    gameId: 42,
-    companyName: "BugHunters Inc.",
-    stage: 1,
-    turnNumber: 7,
-    monthsPassed: 14,
-    missionId: 3,
+  let prevStage = game.stage;
+  const [crisisDecision, setCrisisDecision] = useLocalStorage<string>(
+    GameFields.crisisDecision,
+    ""
+  );
+  const [presentationDecision, setPresentationDecision] =
+    useLocalStorage<string>("presentationDecision", "");
+  const [currentStage, setCurrentStage] = useLocalStorage<Stages>(
+    GameFields.currentStage,
+    "emptyScreen"
+  );
+  const [decision, setDecision] = useLocalStorage<DecisionResponse | undefined>(
+    GameFields.decision,
+    undefined
+  );
+  const [gameState, setGameState] = useLocalStorage<GameState>(
+    GameFields.gameState,
+    game
+  );
+  const [crisis, setCrisis] = useLocalStorage<string>("crisis", "");
 
-    money: 1000,
-    technicReadiness: 55,
-    productReadiness: 64,
-    motivation: 70,
+  const [cube1, setCube1] = useState<number>(Math.floor(Math.random() * 5 + 1));
+  const [rotation1, setRotation1] = useState<number>(
+    Math.floor(Math.random() * 30 + 1)
+  );
+  const [cube2, setCube2] = useState<number>(Math.floor(Math.random() * 5 + 1));
+  const [rotation2, setRotation2] = useState<number>(
+    Math.floor(Math.random() * 30 + 1)
+  );
+  const [showMarket, setShowMarket] = useState(currentStage === "emptyScreen");
+  const [showEnd, setShowEnd] = useState(false);
 
-    juniors: 2,
-    middles: 3,
-    seniors: 1,
+  useEffect(() => {
+    const fetchGeneratedCrisis = async (gameId: number) => {
+      const result = await generateCrisis(gameId);
+      setCrisis(result.description);
+    };
 
-    superEmployees: ["Антон Архитектор"],
-    numberOfOffices: 1,
+    if (showMarket === false && currentStage === "emptyScreen") {
+      setCurrentStage("crisis");
+      fetchGeneratedCrisis(game.gameId);
+      
+    }
+  }, [showMarket]);
 
-    situationText:
-      "Тесты прошли, демо выжило. Но на проде — апокалипсис. MVP взорвался у первых реальных пользователей. Ошибка в логике, баг в форме заказа — и теперь всё, что вы обещали, звучит как шутка. Надо чинить… и как можно быстрее.",
-  };
-  const ans = {
-    motivationDelta: +5,
-    newMotivation: 75,
+  useEffect(() => {
+    setGameState(game);
+    console.log(game.stage, prevStage);
+  }, [game]);
 
-    technicalDelta: +7,
-    newTechnicalReadiness: 62,
-
-    productDelta: +4,
-    newProductReadiness: 68,
-
-    moneyDelta: -3,
-    newMoney: 97,
-
-    textToPlayer:
-      "Команда справилась с багом быстро и честно, что укрепило доверие пользователей. Вы потеряли немного денег из-за временной приостановки, но избежали репутационной катастрофы. Code review теперь стали не рутиной, а страховкой от повторения такого фокапа.",
-
-    qualityScore: 82,
-    roll: "10",
-  };
-
-  const [crisisDecision, setCrisisDecision] = useState<string>("");
-  const [presentationDecision, setPresentationDecision] = useState<string>("");
-  const [currentStage, setCurrentStage] = useState<Stages>("crisis");
-  const [decision, setDecision] = useState<DecisionResponse>();
-  const [newGame, setNewGame] = useState<GameState>(game);
+  useEffect(() => {
+    setShowMarket(currentStage === "emptyScreen");
+  }, [currentStage]);
 
   const stage = {
+    emptyScreen: <></>,
     crisis: (
-      <div>
-        <HeadedBlock header="Кризис">{gameS.situationText}</HeadedBlock>
-        <DecisionField
+      <div className="flex flex-col">
+        <HeadedBlock header="Кризис">{crisis}</HeadedBlock>
+        <CrisisDecision
           inputValue={crisisDecision}
           inputOnChange={setCrisisDecision}
-          submit={async () => {
+          onClick={async () => {
             setDecision(await evaluateDesicion(game.gameId, crisisDecision));
-            setNewGame(await state(game.gameId));
-
+            setGameState(await state(game.gameId));
             setCurrentStage("diceRoll");
           }}
-        ></DecisionField>
+        />
       </div>
     ),
     diceRoll: (
-      <div className="items-center">
+      <div className="flex justify-center items-center w-full h-full">
         <DiceRoller
+          cube1={cube1}
+          cube2={cube2}
+          rotation1={rotation1}
+          rotation2={rotation2}
           onClick={() => {
             //xddddddddddd
-            game.juniors = newGame.juniors;
-            game.middles = newGame.middles;
-            game.money = newGame.money;
-            game.monthsPassed = newGame.monthsPassed;
-            game.motivation = newGame.motivation;
-            game.numberOfOffices = newGame.numberOfOffices;
-            game.productReadiness = newGame.productReadiness;
-            game.stage = newGame.stage;
-            game.turnNumber = newGame.turnNumber;
-            game.technicReadiness = newGame.technicReadiness;
-            game.superEmployees = newGame.superEmployees;
-            game.seniors = newGame.seniors;
-            setCurrentStage("diceResult");
+            game.juniors = gameState.juniors;
+            game.middles = gameState.middles;
+            game.money = gameState.money;
+            game.monthsPassed = gameState.monthsPassed;
+            game.motivation = gameState.motivation;
+            game.numberOfOffices = gameState.numberOfOffices;
+            game.productReadiness = gameState.productReadiness;
+            game.stage = gameState.stage;
+            game.turnNumber = gameState.turnNumber;
+            game.technicReadiness = gameState.technicReadiness;
+            game.superEmployees = gameState.superEmployees;
+            game.seniors = gameState.seniors;
+
+            let count = 0;
+            const interval = setInterval(() => {
+              count++;
+              console.log(`Событие ${count}`);
+              setCube1(Math.floor(Math.random() * 5 + 1));
+              setCube2(Math.floor(Math.random() * 5 + 1));
+              setRotation1(rotation1 + Math.floor(Math.random() * 150 + 1));
+              setRotation2(rotation1 + Math.floor(Math.random() * 150 + 1));
+
+              if (count == 3) {
+                setCube1(decision?.roll.firstCubeRoll!);
+                setCube2(decision?.roll.secondCubeRoll!);
+              }
+
+              if (count >= 4) {
+                clearInterval(interval);
+                setCurrentStage("diceResult");
+              }
+            }, 800);
           }}
         />
       </div>
     ),
     diceResult: (
       <div className="flex flex-col gap-8">
-        <HeadedBlock header="Кризис">{gameS.situationText}</HeadedBlock>
+        <HeadedBlock header="Ваше решение">
+          {gameState.situationText}
+        </HeadedBlock>
         <DiceResult
+          cube1={decision?.roll.firstCubeRoll!}
+          cube2={decision?.roll.secondCubeRoll!}
+          text="Круто!"
           diceResult={decision?.roll.diceTotal ?? 0}
           onClick={async () => {
-            setCurrentStage("presentation");
+            if (game.stage != prevStage) {
+              setCurrentStage("presentation");
+            } else {
+              setCurrentStage("emptyScreen");
+            }
+            prevStage = game.stage;
           }}
         />
       </div>
     ),
     presentation: (
-      <div className="flex flex-col content-center">
+      <div className="flex flex-col content-center max-h-96">
         <HeadedBlock header="Презентация">
           Презентуйте себя и свой проект инвесторам!
         </HeadedBlock>
-        <DecisionField
+        <CrisisDecision
           inputValue={presentationDecision}
           inputOnChange={setPresentationDecision}
-          submit={() => {
-            setCurrentStage("presentationResult");
+          onClick={async () => {
+            setDecision(
+              await evaluatePresentation(game.gameId, crisisDecision)
+            );
+            setGameState(await state(game.gameId));
+
+            if (game.stage === 3) {
+              setShowEnd(true);
+            }
+
+            setCurrentStage("emptyScreen");
           }}
         />
-      </div>
-    ),
-    presentationResult: (
-      <div>
-        <Overlay setOpen={() => {}} color="#284234" strokeColor="#19C964">
-          <div className="flex flex-col gap-4 font-inter">
-            <div className="text-2xl font-extrabold">
-              Ваш проект нравится инвесторам!
-            </div>
-            <div className="text-base font-extrabold">Вы получаете:</div>
-            <div>
-              Кризис показал, что команда умеет быстро реагировать и брать
-              ответственность. Пользователи оценили честность, доверие удалось
-              сохранить. Внутри команды стали строже относиться к проверкам и
-              тестированию.
-            </div>
-          </div>
-        </Overlay>
       </div>
     ),
   };
@@ -169,23 +204,23 @@ const MainScreenLayout: React.FC<{
     >
       <div className="flex flex-col gap-1 basis-[20%] shrink-0 min-h-0 overflow-auto min-w-[185px]">
         <CommandBlock
-          commandName={game.companyName}
+          commandName={gameState.companyName}
           commandPic={banana}
           participants={participants}
         />
         <TimeBlock
-          current={game.monthsPassed}
+          current={gameState.monthsPassed}
           end={30}
           title="Время"
-          startTitle={`${game.monthsPassed} мес.`}
+          startTitle={`${gameState.monthsPassed} мес.`}
           endTitle="30 мес."
         />
         <Statistics
-          techReadiness={game.technicReadiness}
-          productReadiness={game.productReadiness}
-          motivation={game.motivation}
+          techReadiness={gameState.technicReadiness}
+          productReadiness={gameState.productReadiness}
+          motivation={gameState.motivation}
           reputation={0}
-          modificators={game.superEmployees.map(() => {
+          modificators={gameState.superEmployees.map(() => {
             return { picture: defaultPicture };
           })}
           employees={[]}
@@ -195,20 +230,60 @@ const MainScreenLayout: React.FC<{
       <div className="flex w-full h-full">
         <Block grow={1}>
           <div className="flex flex-row gap-10 pl-10">
-            <div className="flex-grow">{stage[currentStage]}</div>
+            <div className="flex-grow overflow-hidden">
+              {stage[currentStage]}
+            </div>
             <div className="flex flex-col gap-3 flex-none">
               <GameFieldValue
                 inCircle="$"
-                tooltip={game.money}
+                tooltip={gameState.money}
               ></GameFieldValue>
               <GameFieldValue
-                inCircle={`${game.stage}/3`}
+                inCircle={`${gameState.stage}/3`}
                 tooltip="Этап"
               ></GameFieldValue>
             </div>
           </div>
         </Block>
       </div>
+      {showMarket && (
+        <Overlay
+          setOpen={() => setShowMarket(false)}
+          color="#171719"
+          strokeColor="#171719"
+        >
+          {/* <div className="flex flex-col gap-4 font-inter">
+            <div className="text-2xl font-extrabold">
+              Ваш проект нравится инвесторам!
+            </div>
+            <div className="text-base font-extrabold">Вы получаете:</div>
+            <div>
+              Кризис показал, что команда умеет быстро реагировать и брать
+              ответственность. Пользователи оценили честность, доверие удалось
+              сохранить. Внутри команды стали строже относиться к проверкам и
+              тестированию.
+            </div>
+          </div> */}
+          <Market
+            updateState={async () => {
+              setGameState(await state(game.gameId));
+              game = gameState;
+            }}
+            gameId={game.gameId}
+            stage={game.stage}
+            onClick={() => setShowMarket(false)}
+          ></Market>
+        </Overlay>
+      )}
+      {showEnd && (
+        <Overlay
+          setOpen={() => setShowEnd(false)}
+          color={Color["Success"]}
+          strokeColor={Color["Success"]}
+        >
+          <div>{gameState.finalScore.totalScore} / 100</div>
+        </Overlay>
+      )}
     </div>
   );
 };

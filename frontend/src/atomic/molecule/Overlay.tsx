@@ -8,17 +8,16 @@ const Overlay: React.FC<{
   setOpen: (open: boolean) => void;
 }> = ({ children, setOpen, color, strokeColor }) => (
   <div
-    className="fixed inset-0 opacity-80 flex items-center justify-center z-50 text-white font-inter"
-    style={{ background: "#24242D" }}
+    className="fixed inset-0 flex items-center justify-center z-50 text-white font-inter"
+    style={{ background: "rgba(36, 36, 45, 0.8)" }}
+    onClick={() => setOpen(false)}
   >
     <div
-      className="flex flex-col p-6 rounded-lg opacity-1 shadow-lg z-60 gap-6 border-solid border-2 max-w-[600px]"
+      className="flex flex-col p-6 rounded-lg opacity-100 shadow-lg z-60 gap-6 border-solid border-2 w-4/5"
       style={{ background: color, borderColor: strokeColor }}
+      onClick={(e) => e.stopPropagation()}
     >
-      <button className="ml-auto" onClick={() => setOpen(false)}>
-        X
-      </button>
-      <div>{children}</div>
+      {children}
     </div>
   </div>
 );

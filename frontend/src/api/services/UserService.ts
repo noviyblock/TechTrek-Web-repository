@@ -4,6 +4,7 @@ enum UserFields {
 }
 
 export interface Game {
+    id: number;
     sphere: string;
     finalScore: string;
 }

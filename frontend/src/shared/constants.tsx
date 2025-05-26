@@ -87,7 +87,7 @@ export const categories: CardButtonProps[] = [
   },
 ];
 
-export const backendURL = "";
+export const backendURL = "http://95.174.91.208:8080";
 
 export const choosableList: ChoosableTextProps[] = [
   {
@@ -255,5 +255,14 @@ export const nullGameState: GameState = {
   seniors: 0,
   superEmployees: [],
   numberOfOffices: 0,
-  situationText: ""
-}
+  situationText: "",
+  finalScore: {
+    moneyScore: 0,
+    techScore: 0,
+    productScore: 0,
+    motivationScore: 0,
+    timeScore: 0,
+    bonusScore: 0,
+    totalScore: 0,
+  },
+};

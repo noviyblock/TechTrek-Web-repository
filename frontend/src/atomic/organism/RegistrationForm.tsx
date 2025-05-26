@@ -17,7 +17,7 @@ const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
       e.preventDefault();
       const response = await register({ username, email, password });
       if (response === 200) {
-        navigate("/game");
+        navigate("/profile");
       }
     } catch (error) {
       console.error(error);

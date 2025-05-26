@@ -66,6 +66,23 @@ public class AuthService {
     private final EmailService emailService;
     private final OtpService otpService;
 
+    public AuthResponse verifyOtpAndGenerateTokens(String email, String otp) {
+        if (!otpService.validateOtp(email, otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+
+        String accessToken = jwtUtil.generateAccessToken(userDetails);
+        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+
+        saveRefreshToken(user, refreshToken);
+        return new AuthResponse(accessToken, refreshToken);
+    }
+
 
     /**
      * Регистрирует нового пользователя на основе переданных данных.

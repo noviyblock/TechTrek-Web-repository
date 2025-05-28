@@ -1,7 +1,10 @@
 package com.startupgame.client;
 
-import com.startupgame.dto.game.CrisisResponse;
-import com.startupgame.dto.ml.*;
+import com.startupgame.modules.game.dto.game.response.CrisisResponse;
+import com.startupgame.modules.game.dto.ml.request.*;
+import com.startupgame.modules.game.dto.ml.response.EvaluateDecisionResult;
+import com.startupgame.modules.game.dto.ml.response.GeneratedMissionResponse;
+import com.startupgame.modules.game.dto.ml.response.NewGameResponse;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;
 

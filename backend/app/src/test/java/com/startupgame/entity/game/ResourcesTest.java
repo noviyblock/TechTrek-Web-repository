@@ -3,6 +3,7 @@ package com.startupgame.entity.game;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.startupgame.modules.game.entity.Resources;
 import org.junit.jupiter.api.Test;
 
 class ResourcesTest {

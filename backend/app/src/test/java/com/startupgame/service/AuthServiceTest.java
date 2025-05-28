@@ -1,15 +1,15 @@
 package com.startupgame.service;
 
-import com.startupgame.dto.auth.AuthResponse;
-import com.startupgame.dto.auth.LoginRequest;
-import com.startupgame.dto.auth.RegisterRequest;
-import com.startupgame.entity.auth.RefreshToken;
-import com.startupgame.entity.user.User;
-import com.startupgame.exception.UserAlreadyExistsException;
-import com.startupgame.repository.auth.RefreshTokenRepository;
-import com.startupgame.repository.user.UserRepository;
+import com.startupgame.modules.auth.dto.response.AuthResponse;
+import com.startupgame.modules.auth.dto.request.LoginRequest;
+import com.startupgame.modules.auth.dto.request.RegisterRequest;
+import com.startupgame.modules.auth.entity.RefreshToken;
+import com.startupgame.modules.user.User;
+import com.startupgame.core.exception.UserAlreadyExistsException;
+import com.startupgame.modules.auth.repository.RefreshTokenRepository;
+import com.startupgame.modules.user.UserRepository;
 import com.startupgame.security.JwtUtil;
-import com.startupgame.service.auth.AuthService;
+import com.startupgame.modules.auth.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +104,7 @@ class AuthServiceTest {
         when(jwtUtil.generateAccessToken(any())).thenReturn("NEW_ACCESS_TOKEN");
 
         //when
-        String newAccessToken = authService.refreshAccessToken(existingRefreshToken);
+        String newAccessToken = String.valueOf(authService.refreshAccessToken(existingRefreshToken));
         //then
         assertEquals("NEW_ACCESS_TOKEN", newAccessToken);
         verify(refreshTokenRepository, never()).delete(entity);

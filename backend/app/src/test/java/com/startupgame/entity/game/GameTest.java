@@ -7,9 +7,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.startupgame.modules.game.entity.Game;
+import com.startupgame.modules.game.entity.Mission;
+import com.startupgame.modules.game.entity.Modifier;
+import com.startupgame.modules.game.entity.Team;
 import org.junit.jupiter.api.Test;
 
-import com.startupgame.entity.user.User;
+import com.startupgame.modules.user.User;
 
 class GameTest {
 

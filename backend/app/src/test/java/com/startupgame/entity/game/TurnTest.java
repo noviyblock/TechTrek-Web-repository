@@ -2,6 +2,10 @@ package com.startupgame.entity.game;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.startupgame.modules.game.entity.ActionType;
+import com.startupgame.modules.game.entity.Game;
+import com.startupgame.modules.game.entity.Resources;
+import com.startupgame.modules.game.entity.Turn;
 import org.junit.jupiter.api.Test;
 
 class TurnTest {

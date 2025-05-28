@@ -1,8 +1,8 @@
 package com.startupgame.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.startupgame.entity.user.User;
-import com.startupgame.repository.user.UserRepository;
+import com.startupgame.modules.user.User;
+import com.startupgame.modules.user.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

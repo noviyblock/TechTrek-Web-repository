@@ -15,8 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.startupgame.entity.user.User;
-import com.startupgame.repository.user.UserRepository;
+import com.startupgame.modules.user.User;
+import com.startupgame.modules.user.UserRepository;
 
 @ExtendWith(SpringExtension.class)
 class CustomUserDetailsServiceTest {

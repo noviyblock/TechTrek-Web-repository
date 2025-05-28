@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.List;
 
+import com.startupgame.modules.game.service.MissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.startupgame.entity.game.Mission;
-import com.startupgame.repository.game.MissionRepository;
+import com.startupgame.modules.game.entity.Mission;
+import com.startupgame.modules.game.repository.MissionRepository;
 
 @ExtendWith(SpringExtension.class)
 class MissionServiceTest {

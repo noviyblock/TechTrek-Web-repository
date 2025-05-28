@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.util.UUID;
 
+import com.startupgame.modules.game.dto.game.response.GameContext;
 import org.junit.jupiter.api.Test;
 
-import com.startupgame.entity.game.Game;
-import com.startupgame.entity.game.Resources;
-import com.startupgame.entity.game.SuperEmployee;
-import com.startupgame.entity.game.Team;
-import com.startupgame.entity.game.Turn;
+import com.startupgame.modules.game.entity.Game;
+import com.startupgame.modules.game.entity.Resources;
+import com.startupgame.modules.game.entity.SuperEmployee;
+import com.startupgame.modules.game.entity.Team;
+import com.startupgame.modules.game.entity.Turn;
 
 class GameContextTest {
 

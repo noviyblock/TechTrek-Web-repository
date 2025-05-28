@@ -1,10 +1,9 @@
 package com.startupgame.aop;
 
-import com.startupgame.entity.user.User;
-import com.startupgame.repository.user.UserRepository;
+import com.startupgame.modules.user.User;
+import com.startupgame.modules.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.MDC;

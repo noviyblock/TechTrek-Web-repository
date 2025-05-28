@@ -2,6 +2,8 @@ package com.startupgame.entity.game;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.startupgame.modules.game.entity.Modifier;
+import com.startupgame.modules.game.entity.ModifierType;
 import org.junit.jupiter.api.Test;
 
 class ModifierTest {

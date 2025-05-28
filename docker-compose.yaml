@@ -62,12 +62,10 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.4
     container_name: kibana
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     environment:
-      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
-      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${TOKEN}
-      - xpack.security.enrollment.enabled=false
-    env_file:
-      - .env
+      - TOKEN=${TOKEN}
     ports: [ "5601:5601" ]
 
   logstash:

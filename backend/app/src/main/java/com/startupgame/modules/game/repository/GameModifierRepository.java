@@ -16,10 +16,10 @@ public interface GameModifierRepository extends JpaRepository<GameModifier, Long
     Optional<GameModifier> findByGameIdAndModifierId(Long gameId, Long modifierId);
 
     @Query("""
-                SELECT new com.startupgame.dto.game.DeveloperCounts(
-                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.entity.game.ModifierType.JUNIOR THEN gm.quantity END), 0),
-                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.entity.game.ModifierType.MIDDLE THEN gm.quantity END), 0),
-                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.entity.game.ModifierType.SENIOR THEN gm.quantity END), 0)
+                SELECT new com.startupgame.modules.game.dto.game.response.DeveloperCounts (
+                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.modules.game.entity.ModifierType.JUNIOR THEN gm.quantity END), 0),
+                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.modules.game.entity.ModifierType.MIDDLE THEN gm.quantity END), 0),
+                    COALESCE(SUM(CASE WHEN m.modifierType = com.startupgame.modules.game.entity.ModifierType.SENIOR THEN gm.quantity END), 0)
                 )
                 FROM GameModifier gm
                 JOIN gm.modifier m
@@ -33,7 +33,7 @@ public interface GameModifierRepository extends JpaRepository<GameModifier, Long
                 JOIN gm.modifier m
                 WHERE gm.game.id = :gameId
                   AND m.modifierType IN (
-                       com.startupgame.entity.game.ModifierType.C_LEVEL
+                       com.startupgame.modules.game.entity.ModifierType.C_LEVEL
                   )
                   AND gm.active = true
             """)
@@ -45,7 +45,7 @@ public interface GameModifierRepository extends JpaRepository<GameModifier, Long
                 JOIN gm.modifier m
                 WHERE gm.game.id = :gameId
                   AND m.modifierType IN (
-                       com.startupgame.entity.game.ModifierType.OFFICE
+                       com.startupgame.modules.game.entity.ModifierType.OFFICE
                   )
                   AND gm.active = true
                 ORDER BY gm.id DESC

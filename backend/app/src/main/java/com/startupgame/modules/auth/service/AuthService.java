@@ -24,31 +24,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import org.slf4j.MDC;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.startupgame.dto.auth.AccessTokenResponse;
-import com.startupgame.dto.auth.AuthResponse;
-import com.startupgame.dto.auth.LoginRequest;
-import com.startupgame.dto.auth.RegisterRequest;
-import com.startupgame.entity.auth.RefreshToken;
-import com.startupgame.entity.user.User;
-import com.startupgame.exception.UserAlreadyExistsException;
-import com.startupgame.repository.auth.RefreshTokenRepository;
-import com.startupgame.repository.user.UserRepository;
-import com.startupgame.security.JwtUtil;
-
-import jakarta.transaction.Transactional;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.startupgame.service.auth.EmailService;
+import com.startupgame.service.auth.OtpService;
 
 
 @Service

@@ -2,9 +2,9 @@ package com.startupgame.service;
 
 import org.springframework.data.domain.PageImpl;
 
-import com.startupgame.entity.game.Sphere;
-import com.startupgame.repository.game.SphereRepository;
-import com.startupgame.service.game.SphereService;
+import com.startupgame.modules.game.entity.Sphere;
+import com.startupgame.modules.game.repository.SphereRepository;
+import com.startupgame.modules.game.service.SphereService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

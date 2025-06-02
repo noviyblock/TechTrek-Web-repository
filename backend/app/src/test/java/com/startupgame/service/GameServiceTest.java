@@ -1,11 +1,12 @@
 package com.startupgame.service;
 
-import com.startupgame.dto.game.GameStateDTO;
-import com.startupgame.entity.game.*;
-import com.startupgame.entity.user.User;
-import com.startupgame.repository.game.*;
-import com.startupgame.repository.user.UserRepository;
-import com.startupgame.service.game.GameService;
+import com.startupgame.modules.game.dto.game.response.GameStateDTO;
+import com.startupgame.modules.game.service.GameLifecycleService;
+import com.startupgame.modules.user.User;
+import com.startupgame.modules.game.entity.*;
+import com.startupgame.modules.game.repository.*;
+import com.startupgame.modules.user.UserRepository;
+import com.startupgame.modules.game.service.GameService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ class GameServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private GameLifecycleService gameLifecycleService;
     @Mock
     private MissionRepository missionRepository;
     @Mock
@@ -58,7 +61,7 @@ class GameServiceTest {
 
     @Test
     void startGame_happyPath_returnsFilledDTO() {
-        GameStateDTO dto = gameService.startGame(42L, "Trace", "tester");
+        GameStateDTO dto = gameLifecycleService.startGame(42L, "Trace", "tester");
 
         assertThat(dto).isNotNull();
         assertThat(dto.getMissionId()).isEqualTo(42L);
@@ -76,7 +79,7 @@ class GameServiceTest {
     void startGame_userNotFound_throws() {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gameService.startGame(42L, "Trace", "ghost"))
+        assertThatThrownBy(() -> gameLifecycleService.startGame(42L, "Trace", "ghost"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("User not found");
     }
@@ -85,7 +88,7 @@ class GameServiceTest {
     void startGame_missionNotFound_throws() {
         when(missionRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> gameService.startGame(99L, "Trace", "tester"))
+        assertThatThrownBy(() -> gameLifecycleService.startGame(99L, "Trace", "tester"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Mission not found");
     }

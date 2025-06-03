@@ -9,3 +9,5 @@ databaseChangeLog:
 #      file: db/changelog/game-modifier-indexes.yaml
   - include:
       file: db/changelog/add-game-final-score-table.yaml
+  - include:
+      file: db/changelog/add-role-column-into-users.yaml

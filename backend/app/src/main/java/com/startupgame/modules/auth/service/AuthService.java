@@ -5,6 +5,7 @@ import com.startupgame.modules.auth.dto.response.AuthResponse;
 import com.startupgame.modules.auth.dto.request.LoginRequest;
 import com.startupgame.modules.auth.dto.request.RegisterRequest;
 import com.startupgame.modules.auth.entity.RefreshToken;
+import com.startupgame.modules.user.Role;
 import com.startupgame.modules.user.User;
 import com.startupgame.core.exception.InvalidTokenException;
 import com.startupgame.core.exception.NotFoundExecption;
@@ -26,6 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.startupgame.service.auth.EmailService;
 import com.startupgame.service.auth.OtpService;
+
+import java.util.UUID;
 
 
 @Service
@@ -115,6 +118,31 @@ public class AuthService {
         log.info("OTP sent to email: {}", user.getEmail());
 
         return new AuthResponse(null, null); // Токены ещё не выдаём
+    }
+
+    public AuthResponse createGuestSession() {
+        String guestId = "guest-" + UUID.randomUUID();
+        log.info("Creating guest session: guestId={}", guestId);
+
+        User guest = User.builder()
+                .username(guestId)
+                .email("")
+                .password("")
+                .role(Role.ROLE_GUEST)
+                .build();
+
+        userRepository.save(guest);
+
+        UserDetails guestDetails = org.springframework.security.core.userdetails.User
+                .withUsername(guest.getUsername())
+                .password("")
+                .authorities(guest.getRole().name())
+                .build();
+
+        String accessToken = jwtUtil.generateAccessToken(guestDetails);
+        String refreshToken = jwtUtil.generateRefreshToken(guestDetails);
+
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     /**

@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-column-role
+      author: Nik Menshikov
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+        - update:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  value: ROLE_USER
+              - modifyDataType:
+                  tableName: users
+                  columnName: role
+                  newDataType: VARCHAR(20)
+              - addNotNullConstraint:
+                  tableName: users
+                  columnName: role
+                  columnDataType: VARCHAR(20)

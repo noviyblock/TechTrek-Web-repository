@@ -83,4 +83,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
+
+    @PostMapping("/guest")
+    public ResponseEntity<AuthResponse> guestLogin() {
+       return ResponseEntity.ok(authService.createGuestSession());
+    }
+
 }

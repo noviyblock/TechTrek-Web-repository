@@ -37,6 +37,7 @@ public class GameLifecycleService {
     private final TurnRepository turnRepository;
     private final GameModifierRepository gameModifierRepository;
     private final GameFinalScoreRepository gameFinalScoreRepository;
+    private final GameUtil gameUtil;
 
 
     /**
@@ -192,7 +193,7 @@ public class GameLifecycleService {
                 ctx.getGame().setEndTime(LocalDateTime.now());
                 gameRepository.save(ctx.getGame());
             }
-            GameUtil.endGameWithTransaction(ctx.getGame().getId());
+            gameUtil.endGameWithTransaction(ctx.getGame().getId());
             return true;
         }
         return false;

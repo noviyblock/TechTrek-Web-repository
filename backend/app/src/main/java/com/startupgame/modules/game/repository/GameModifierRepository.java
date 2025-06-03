@@ -52,4 +52,13 @@ public interface GameModifierRepository extends JpaRepository<GameModifier, Long
             """)
     Optional<Modifier> findActiveOffice(@Param("gameId") Long gameId);
 
+    @Query("""
+                SELECT COALESCE(SUM(gm.quantity * m.upkeepCost), 0)
+                FROM GameModifier gm
+                JOIN gm.modifier m
+                WHERE gm.game.id = :gameId
+                  AND gm.active = true
+            """)
+    Long sumUpkeepCosts(@Param("gameId") Long gameId);
+
 }

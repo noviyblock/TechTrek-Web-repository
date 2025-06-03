@@ -26,5 +26,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column
+    private Role role;
+
     //TODO override method toString
 }

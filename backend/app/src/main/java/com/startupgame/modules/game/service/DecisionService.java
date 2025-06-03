@@ -15,6 +15,7 @@ import com.startupgame.modules.game.repository.ResourcesRepository;
 import com.startupgame.modules.game.repository.TurnRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import static com.startupgame.core.util.GameUtil.getMonthsPassed;
 @RequiredArgsConstructor
 public class DecisionService {
 
+    private final GameUtil gameUtil;
     private final ResourcesRepository resourcesRepository;
     private final GameModifierRepository gameModifierRepository;
     private final GameLifecycleService gameLifecycleService;
@@ -52,6 +54,7 @@ public class DecisionService {
         RollWithMultiplier rollWithMultiplier = diceService.doRoll(gameId);
         double multiplier = rollWithMultiplier.getMultiplier();
         applyChanges(gameContext.getResources(), rawDelta, multiplier);
+        applyUpkeepCosts(gameContext);
         if (gameLifecycleService.tryFinishEarly(gameContext)) {
             return buildResponse(rawDelta,
                     gameContext.getResources(),
@@ -74,6 +77,7 @@ public class DecisionService {
         EvaluateDecisionResult mlResponse = callMl(gameContext, decisionRequest.getDecision());
         ResourceDelta rawDelta = calculateDelta(mlResponse.getQuality_score());
         applyChanges(gameContext.getResources(), rawDelta, 1.0);
+        applyUpkeepCosts(gameContext);
         if (gameLifecycleService.tryFinishEarly(gameContext)) {
             return buildResponse(rawDelta,
                     gameContext.getResources(),
@@ -146,6 +150,13 @@ public class DecisionService {
         );
     }
 
+    private void applyUpkeepCosts(GameContext ctx) {
+        Long upkeep = gameModifierRepository.sumUpkeepCosts(ctx.getGame().getId());
+        Resources res = ctx.getResources();
+        res.setMoney(Math.max(0L, res.getMoney() - upkeep));
+        resourcesRepository.save(res);
+    }
+
     private void createNextTurn(GameContext gameContext, String decision, EvaluateDecisionResult mlResponse, RollResponse roll) {
         if (gameContext.getGame().getEndTime() != null) {
             return;
@@ -171,7 +182,7 @@ public class DecisionService {
         if (nextNumber == 18) {
             gameContext.getGame().setEndTime(LocalDateTime.now());
             gameRepository.save(gameContext.getGame());
-            GameUtil.endGameWithTransaction(gameContext.getGame().getId());
+            gameUtil.endGameWithTransaction(gameContext.getGame().getId());
         }
     }
 

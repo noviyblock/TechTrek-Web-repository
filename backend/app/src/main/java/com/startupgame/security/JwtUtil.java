@@ -41,12 +41,18 @@ public class JwtUtil {
                 .getPayload();
     }
 
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     public String generateToken(UserDetails userDetails, long expiration) {
         Map<String, Object> claims = new HashMap<>();
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        claims.put("role", role);
         return createToken(claims, userDetails.getUsername(), expiration);
     }
 
@@ -75,6 +81,14 @@ public class JwtUtil {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private SecretKey getSecretKey() {

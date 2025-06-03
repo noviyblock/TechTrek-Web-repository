@@ -40,7 +40,7 @@ _API_URL = "https://openrouter.ai/api/v1"
 _MODEL_NAME = "qwen/qwen-2.5-7b-instruct:free"
 # api_key = "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"
 # api_key = "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"
-api_key = "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"
+api_key = "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"
 
 @lru_cache(maxsize=1)
 def _get_client() -> OpenAI:

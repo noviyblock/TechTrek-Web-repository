@@ -87,7 +87,7 @@ export const categories: CardButtonProps[] = [
   },
 ];
 
-export const backendURL = "http://95.174.91.208:8080";
+export const backendURL = "";
 
 export const choosableList: ChoosableTextProps[] = [
   {

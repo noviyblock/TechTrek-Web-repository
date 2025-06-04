@@ -2,6 +2,7 @@ server.host: "0.0.0.0"
 server.basePath: "/logs"
 server.rewriteBasePath: true
 server.publicBaseUrl: "https://techtrekgame.ru/logs"
+elasticsearch.ssl.verificationMode: none
 
 elasticsearch.hosts: ["http://elasticsearch:9200"]
 elasticsearch.serviceAccountToken: "token"

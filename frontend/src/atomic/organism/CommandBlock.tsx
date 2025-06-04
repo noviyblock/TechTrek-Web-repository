@@ -1,26 +1,32 @@
 import { tooltipColor } from "../../shared/Color";
 import Block from "../molecule/Block";
-import PictureList from "../molecule/PictureList";
 import { CommandBlockProps } from "../../shared/Types";
+import ColoredText from "../atom/ColoredText";
+import { categories } from "../../shared/constants";
 
 const CommandBlock: React.FC<CommandBlockProps> = ({
   commandName,
   commandPic,
-  participants,
+  mission,
+  sphere,
 }) => (
   <Block grow={0}>
     <div className="flex flex-col gap-2">
       <div className="flex flex-row justify-between content-center max-h-[3em] min-h-[3em]">
-        <div className="flex flex-col">
+        <div className="flex flex-col font-inter">
           <div
             className="font-inter font-bold text-xs"
             style={{ color: tooltipColor }}
           >
-            Команда
+            Компания
           </div>
-          <div className="text-white font-inter text-xl"> {commandName} </div>
+          <div className="flex flex-row gap-2 items-center">
+            <div className="text-white font-inter"> {commandName} </div>
+            {/* TODO onclick */}
+            <div className="rounded-full text-xs text-white w-4 h-4 text-center mt-[2px] cursor-pointer" style={{backgroundColor: "#3F3F46"}}>i</div>
+          </div>
         </div>
-        <div className="max-w-[3em] min-w-[3em] min-h-[3em] rounded-full overflow-hidden">
+        <div className="max-w-[3em] min-w-[3em] min-h-[3em] rounded-2xl overflow-hidden">
           <img
             className="w-full h-full object-cover"
             src={commandPic}
@@ -29,20 +35,20 @@ const CommandBlock: React.FC<CommandBlockProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <ColoredText background={categories[sphere].color ?? "Warning"} className="text-xs text-center" px="8px">
+      {categories[sphere].name}
+      </ColoredText>
+
+      <div className="flex flex-col gap-2 font-inter">
         <div
-          className="font-inter font-bold text-xs"
+          className="font-extrabold text-xs"
           style={{ color: tooltipColor }}
         >
-          Участники
+          Миссия и цель
         </div>
-        <PictureList
-          pictures={participants.flatMap((participant) => ({
-            image: participant.picture,
-            rounding: 12,
-          }))}
-          size={50}
-        />
+        <div className="text-xs text-white">
+          {mission}
+        </div>
       </div>
     </div>
   </Block>

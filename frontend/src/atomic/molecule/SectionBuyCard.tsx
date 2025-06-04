@@ -25,7 +25,7 @@ const SectionBuyCard: React.FC<{
   section: sectionType;
   onClick: React.MouseEventHandler<HTMLButtonElement>;
 }> = ({ section, onClick }) => 
-<div className="flex flex-col justify-between font-inter text-white p-4 max-w-[15rem] items-center min-h-80 border-solid border-white border-[1px]" style={{background: Color["DefaultAccent"]}}>
+<div className="flex flex-col justify-between font-inter text-white p-4 max-w-[15rem] min-w-[10rem] items-center min-h-80 border-solid border-white border-[1px]" style={{background: Color["DefaultAccent"]}}>
   <div className="flex flex-col gap-2">
   <div className="text-2xl">{sectionName[section]}
   </div>

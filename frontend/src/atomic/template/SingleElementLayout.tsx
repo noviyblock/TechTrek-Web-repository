@@ -8,6 +8,8 @@ const SingleElementLayoutTemplate: React.FC<{
   width?: string;
   minWidth?: string;
   height?: string;
+  onBack?: () => void;
+  onRegen?: () => void;
 }> = ({
   children,
   backable = false,
@@ -15,6 +17,8 @@ const SingleElementLayoutTemplate: React.FC<{
   width,
   minWidth,
   height,
+  onBack,
+  onRegen,
 }) => (
   <div
     style={{ background: deafultBackground }}
@@ -34,14 +38,16 @@ const SingleElementLayoutTemplate: React.FC<{
       className="relative overflow-hidden"
     >
       <div
-        className="absolute top-0 left-0 p-3 text-white"
+        className="absolute top-0 left-0 p-3 text-white cursor-pointer"
         style={{ display: !backable ? "none" : "block" }}
+        onClick={onBack}
       >
         Back
       </div>
       <div
-        className="absolute top-0 right-0 p-3 text-white"
+        className="absolute top-0 right-0 p-3 text-white cursor-pointers"
         style={{ display: !regenable ? "none" : "block" }}
+        onClick={onRegen}
       >
         Regen
       </div>

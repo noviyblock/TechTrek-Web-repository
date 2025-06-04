@@ -5,9 +5,8 @@ import Link from "../atom/Link";
 import MediumButton from "../atom/MediumButton";
 import { useNavigate } from "react-router-dom";
 
-const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
+const RegistrationForm: React.FC<{ width: string; onClick: () => void; email: string; setEmail: React.Dispatch<React.SetStateAction<string>>; }> = ({ width, onClick, email, setEmail }) => {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatedPassword, setRepeatedPassword] = useState("");
   const navigate = useNavigate();
@@ -16,8 +15,8 @@ const RegistrationForm: React.FC<{ width: string }> = ({ width }) => {
     try {
       e.preventDefault();
       const response = await register({ username, email, password });
-      if (response === 200) {
-        navigate("/profile");
+      if (response && response <= 300 && response >= 200) { 
+          onClick();
       }
     } catch (error) {
       console.error(error);

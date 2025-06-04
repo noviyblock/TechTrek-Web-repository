@@ -7,6 +7,7 @@ export interface Game {
     id: number;
     sphere: string;
     finalScore: string;
+    companyName: string;
 }
 
 export interface User {

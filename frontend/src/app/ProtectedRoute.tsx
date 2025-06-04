@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { status } from "../api/Auth";
 import React, { useEffect, useState } from "react";
 import { deafultBackground } from "../shared/Color";
@@ -9,6 +9,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation()
 
   const checkAuthStatus = async () => {
     try {
@@ -29,7 +30,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <div style={{background: deafultBackground}}></div>;
   }
 
-  if (!isAuthenticated && false) {
+  if (!isAuthenticated && location.pathname.indexOf("game") == -1) {
     navigate("/login");
   }
 

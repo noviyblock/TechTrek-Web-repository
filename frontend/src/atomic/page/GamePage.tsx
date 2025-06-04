@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import SphereSelectionPage from "./SphereSelectionPage";
 import MissionPage from "./MissionPage";
 import CommandNamePage from "./CommandNamePage";
@@ -8,9 +8,10 @@ import { GameState, getMissions, startGame, state } from "../../api/Game";
 import { nullGameState } from "../../shared/constants";
 import { useLocalStorage } from "../../LocalStorage";
 import { GameFields, GameService } from "../../api/services/GameService";
-
+import { useNavigate } from "react-router-dom";
 
 const GamePage: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useLocalStorage<Pages>(
     GameFields.gamePage,
     "spherePage"
@@ -29,17 +30,19 @@ const GamePage: React.FC = () => {
     if (gameId === undefined) {
       GameService.reset();
       return;
-    };
+    }
 
     const fetchGameState = async (gameId: number) => {
-      const result = await state(gameId);
-      setGameState(result);
+      if (gameId !== 0) {
+        const result = await state(gameId);
+        setGameState(result);
+      }
     };
 
     fetchGameState(gameId);
     GameService.setGameId(gameId);
     setCurrentPage("mainScreen");
-  }, [gameId]);
+  }, []);
 
   useEffect(() => {
     if (sphere === 0 || gameId) return;
@@ -56,7 +59,7 @@ const GamePage: React.FC = () => {
     };
 
     fetchMissions(sphere);
-  }, [sphere]);
+  }, [sphere, gameId]);
 
   useEffect(() => {
     if (
@@ -77,13 +80,12 @@ const GamePage: React.FC = () => {
     };
 
     fetchStartGame();
-  }, [mission, commandName, currentPage]);
+  }, [mission, commandName, currentPage, gameId, gameState]);
 
   useEffect(() => {
-    if (gameState === nullGameState)
-      return;
+    if (gameState === nullGameState) return;
     GameService.setGameId(gameState.gameId);
-  }, [gameState])
+  }, [gameState]);
 
   const gamePages = {
     spherePage: (
@@ -91,6 +93,9 @@ const GamePage: React.FC = () => {
         onClick={(sphere: number) => {
           setSphere(sphere);
           setCurrentPage("missionPage");
+        }}
+        onBack={() => {
+          navigate("/profile");
         }}
       ></SphereSelectionPage>
     ),
@@ -112,7 +117,7 @@ const GamePage: React.FC = () => {
       ></CommandNamePage>
     ),
     mainScreen: (
-      <MainScreenLayout game={gameState}>
+      <MainScreenLayout game={gameState} sphere={sphere}>
         <></>
       </MainScreenLayout>
     ),

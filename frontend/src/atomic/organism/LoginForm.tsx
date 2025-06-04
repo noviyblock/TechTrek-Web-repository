@@ -2,8 +2,9 @@ import { useState } from "react";
 import InputField from "../atom/InputField";
 import Link from "../atom/Link";
 import MediumButton from "../atom/MediumButton";
-import { login } from "../../api/Auth";
+import { guest, login } from "../../api/Auth";
 import { useNavigate } from "react-router-dom";
+import ProfileButtonBorder from "../atom/ProfileButtonBorder";
 
 const LoginForm: React.FC<{ width: string }> = ({ width }) => {
   const [email, setEmail] = useState("");
@@ -50,9 +51,14 @@ const LoginForm: React.FC<{ width: string }> = ({ width }) => {
             </div>
             <Link href="/register">Регистрация</Link>
           </div>
+          <div className="flex flex-col gap-6 items-center w-full">
           <MediumButton color="Primary" form="loginForm">
             Войти
           </MediumButton>
+          <ProfileButtonBorder color="Primary" height={40} onClick={async () => {await guest(); navigate("/game")}}>
+          Играть как гость
+          </ProfileButtonBorder>
+          </div>
         </div>
       </form>
     </div>

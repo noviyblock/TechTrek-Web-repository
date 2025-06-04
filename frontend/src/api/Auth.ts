@@ -1,6 +1,6 @@
 import axios from "axios";
 import TokenService from "./services/TokenService";
-import axiosInstance from "./AxiosInstance";
+import axiosInstance, { safeRequest } from "./AxiosInstance";
 import UserService from "./services/UserService";
 
 export interface Auth {
@@ -37,17 +37,22 @@ export interface StatusResponse {
   };
 }
 
+export interface OtpRequest {
+  email: string;
+  otp: string;
+}
+
 export const refresh = () => {
   const refreshToken: RefreshToken = {
     refreshToken: TokenService.getRefreshToken()!,
   };
-  return axios.post("/api/auth/refresh", refreshToken);
+  return axios.post("/auth/refresh", refreshToken);
 };
 
 export const register = async (userRegister: UserRegister) => {
   try {
     const response = await axios.post<AuthResponse>(
-      "/api/auth/register",
+      "/auth/register",
       userRegister
     );
     TokenService.setTokens(response.data);
@@ -62,7 +67,7 @@ export const register = async (userRegister: UserRegister) => {
 export const login = async (userLogin: UserLogin) => {
   try {
     const response = await axios.post<AuthResponse>(
-      "/api/auth/login",
+      "/auth/login",
       userLogin
     );
     TokenService.setTokens(response.data);
@@ -73,13 +78,27 @@ export const login = async (userLogin: UserLogin) => {
   }
 };
 
+export const guest = async() => {
+  try {
+    const response = await axios.post<AuthResponse>(
+      "/auth/guest"
+    );
+    TokenService.setTokens(response.data);
+    UserService.setUsername(response.data.username);
+    return response.status;
+  } catch (error) {
+  }
+}
+
 export const status = async (): Promise<boolean> => {
   try {
     return (
-      (await axiosInstance.get("/api/auth/status")).status === 200
+      (await axiosInstance.get("/auth/status")).status === 200 && UserService.getUsername() !== "undefined"
     );
   } catch (error) {
     console.error(error);
     return false;
   }
 };
+
+export const verify_otp = async ({email, otp}: OtpRequest) => safeRequest<string>(() => axiosInstance.post("/verify-otp", {email, otp}));

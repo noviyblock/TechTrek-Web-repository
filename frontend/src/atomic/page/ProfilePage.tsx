@@ -3,7 +3,7 @@ import { User } from "../../api/services/UserService";
 import { getUser } from "../../api/User";
 import MediumButton from "../atom/MediumButton";
 import { useNavigate } from "react-router-dom";
-import { Color } from "../../shared/Color";
+import { Color, deafultBackground } from "../../shared/Color";
 import TitledText from "../atom/TitledText";
 import ProfileBlock from "../organism/ProfileBlock";
 import Block from "../molecule/Block";
@@ -38,11 +38,11 @@ const ProfilePage: React.FC = () => {
   return (
     <div
       className="flex flex-row gap-1 h-screen w-screen overflow-clip"
-      style={{ background: Color.DefaultAccent }}
+      style={{ background: deafultBackground }}
     >
       <ProfileBlock username={user.username} email={user.email} />
       <Block grow={1} h='h-screen'>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 h-screen">
           <ProfileGame></ProfileGame>
           <div>
             <hr className="-mx-4" style={{ borderColor: Color["Gray"] }} />

@@ -6,7 +6,7 @@ const TitledText: React.FC<{ header: string; text: string }> = ({
 }) => (
   <div className="flex-col font-inter">
     <div className="text-gray-600 text-sm">{header}</div>
-    <div className="text-white text-xl">{text}</div>
+    <div className="text-white text-xl overflow-auto">{text}</div>
   </div>
 );
 export default TitledText;

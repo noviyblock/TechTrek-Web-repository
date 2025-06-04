@@ -1,9 +1,20 @@
-import axios, { InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import tokenService from "./services/TokenService";
 import { AxiosError } from "axios";
 import { backendURL } from "../shared/constants";
 import { refresh } from "./Auth";
 
+export async function safeRequest<T>(
+  request: () => Promise<AxiosResponse<T>>
+): Promise<T> {
+  const response = await request();
+
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  }
+
+  return response.data;
+}
 axios.defaults.baseURL = backendURL;
 
 const axiosInstance = axios.create({

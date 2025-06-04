@@ -5,7 +5,7 @@ import CardButtonTable from "../molecule/CardButtonTable";
 import SingleElementLayoutTemplate from "../template/SingleElementLayout";
 import { CardButtonProps } from "../../shared/Types";
 
-const SphereSelectionPage: React.FC<{ onClick: (sphere: number) => void; onBack: () => void }> = ({
+const SphereSelectionPage: React.FC<{ onClick: (sphere: number) => void; onBack?: () => void }> = ({
   onClick,
   onBack
 }) => {

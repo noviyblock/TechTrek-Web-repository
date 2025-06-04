@@ -24,6 +24,7 @@ const GamePage: React.FC = () => {
     ""
   );
   const gameId = GameService.getGameId();
+  const [gameIdState, setGameId] = useState(0);
   const [gameState, setGameState] = useState<GameState>(nullGameState);
 
   useEffect(() => {
@@ -33,15 +34,16 @@ const GamePage: React.FC = () => {
     }
 
     const fetchGameState = async (gameId: number) => {
-      if (gameId !== 0) {
         const result = await state(gameId);
         setGameState(result);
-      }
     };
 
-    fetchGameState(gameId);
-    GameService.setGameId(gameId);
-    setCurrentPage("mainScreen");
+    if (gameId !== 0) {
+      fetchGameState(gameId);
+      GameService.setGameId(gameId);
+      setGameId(gameId);
+      setCurrentPage("mainScreen");
+    }
   }, []);
 
   useEffect(() => {
@@ -76,6 +78,7 @@ const GamePage: React.FC = () => {
         missionId: mission,
         companyName: commandName,
       });
+      setGameId(result.gameId);
       setGameState(result);
     };
 
@@ -117,7 +120,7 @@ const GamePage: React.FC = () => {
       ></CommandNamePage>
     ),
     mainScreen: (
-      <MainScreenLayout game={gameState} sphere={sphere}>
+      <MainScreenLayout game={gameState} sphere={sphere} gameId={gameIdState}>
         <></>
       </MainScreenLayout>
     ),

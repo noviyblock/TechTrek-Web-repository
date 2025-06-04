@@ -27,8 +27,10 @@ const Market: React.FC<{
       );
     };
 
-    fetchModifiers(gameId);
-  }, []);
+    if (gameId !== undefined) {
+      fetchModifiers(gameId);
+    }
+  }, [gameId]);
 
   const screens = {
     main: (
@@ -58,7 +60,7 @@ const Market: React.FC<{
             (value) => value.type !== "OFFICE" && value.type !== "C_LEVEL"
           )
           .map((value) => {
-            return { ...value, gameId };
+            return { ...value, gameId: gameId };
           })}
       ></MarketBuy>
     ),
@@ -77,7 +79,7 @@ const Market: React.FC<{
         modifiers={modifierList
           .filter((value) => value.type === "C_LEVEL")
           .map((value) => {
-            return { ...value, gameId };
+            return { ...value, gameId: gameId };
           })}
       ></MarketBuy>
     ),
@@ -92,7 +94,7 @@ const Market: React.FC<{
         modifiers={modifierList
           .filter((value) => value.type === "OFFICE")
           .map((value) => {
-            return { ...value, gameId };
+            return { ...value, gameId: gameId };
           })}
       ></MarketBuy>
     ),

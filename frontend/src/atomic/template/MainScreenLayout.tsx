@@ -28,8 +28,8 @@ const MainScreenLayout: React.FC<{
   game: GameState;
   children: React.ReactNode;
   sphere: number;
-}> = ({ game, children, sphere }) => {
-  const gameId = GameService.getGameId()!;
+  gameId: number;
+}> = ({ game, children, sphere, gameId }) => {
   let prevStage = useRef(game.stage);
   const [crisisDecision, setCrisisDecision] = useLocalStorage<string>(
     GameFields.crisisDecision,
@@ -41,6 +41,8 @@ const MainScreenLayout: React.FC<{
     GameFields.currentStage,
     "emptyScreen"
   );
+
+  console.log(currentStage);
   const [decision, setDecision] = useLocalStorage<DecisionResponse | undefined>(
     GameFields.decision,
     undefined
@@ -53,9 +55,7 @@ const MainScreenLayout: React.FC<{
 
   function setNewGameState(gameState: GameState) {
     prevStage.current = gameState.stage;
-    console.log("prev" + prevStage);
     setGameState(gameState);
-    console.log("current" + gameState.stage);
   }
 
   const [crisis, setCrisis] = useLocalStorage<string>("crisis", "");
@@ -68,12 +68,13 @@ const MainScreenLayout: React.FC<{
   const [rotation2, setRotation2] = useState<number>(
     Math.floor(Math.random() * 30 + 1)
   );
+
   const [showMarket, setShowMarket] = useState(currentStage === "emptyScreen");
   const [showEnd, setShowEnd] = useState(false);
 
   useEffect(() => {
     const fetchGeneratedCrisis = async (gameId: number) => {
-      if (gameId !== undefined) {
+      if (gameId !== 0) {
         const result = await generateCrisis(gameId);
         setCrisis(result.description);
       }
@@ -90,7 +91,7 @@ const MainScreenLayout: React.FC<{
   }, [currentStage]);
 
   useEffect(() => {
-    if (gameId !== undefined) {
+    if (gameId !== 0) {
       const wrap = async () => {
         setShownGame(await state(gameId));
       };
@@ -98,6 +99,18 @@ const MainScreenLayout: React.FC<{
       wrap();
     }
   }, [gameId]);
+
+  const [showPresentation, setShowPresentation] = useState(false);
+
+  useEffect(() => {
+    console.log(prevStage.current);
+    if (
+      prevStage.current !== 0 &&
+      prevStage.current !== 1 &&
+      prevStage.current !== undefined
+    )
+      setShowPresentation(true);
+  }, [prevStage.current]);
 
   const stage = {
     emptyScreen: <></>,
@@ -112,6 +125,9 @@ const MainScreenLayout: React.FC<{
             setCrisisDecision("");
             setNewGameState(await state(gameId));
             setCurrentStage("diceRoll");
+            if (gameState.finalScore !== null) {
+              setShowEnd(true);
+            }
           }}
         />
       </div>
@@ -154,13 +170,23 @@ const MainScreenLayout: React.FC<{
           {shownGame.situationText}
         </HeadedBlock>
         <DiceResult
+          color={
+            decision?.roll.diceTotal! <= 4
+              ? Color.Danger
+              : decision?.roll.diceTotal! >= 8
+              ? Color.Success
+              : Color.Warning
+          }
           cube1={decision?.roll.firstCubeRoll!}
           cube2={decision?.roll.secondCubeRoll!}
           text="Круто!"
           diceResult={decision?.roll.diceTotal ?? 0}
           onClick={async () => {
-            if (gameState.stage !== prevStage.current) {
+            if (showPresentation || gameState.turnNumber === 18) {
               setCurrentStage("presentation");
+              const result = await generateCrisis(gameId);
+              setCrisis(result.description);
+              setShowPresentation(false);
             } else {
               setCurrentStage("emptyScreen");
             }
@@ -178,11 +204,11 @@ const MainScreenLayout: React.FC<{
           inputOnChange={setPresentationDecision}
           onClick={async () => {
             setDecision(
-              await evaluatePresentation(gameId, crisisDecision)
+              await evaluatePresentation(gameId, presentationDecision)
             );
             setNewGameState(await state(gameId));
 
-            if (gameState.stage === 3) {
+            if (gameState.finalScore !== null) {
               setShowEnd(true);
             }
 
@@ -201,7 +227,7 @@ const MainScreenLayout: React.FC<{
     >
       <div className="flex flex-col gap-1 basis-[20%] shrink-0 min-h-0 overflow-auto min-w-[185px]">
         <CommandBlock
-          commandName={gameState.companyName}
+          commandName={shownGame.companyName}
           commandPic={banana}
           mission={
             "Упростить управление личными финансами через инновационные цифровые решения"
@@ -266,8 +292,10 @@ const MainScreenLayout: React.FC<{
           </div> */}
           <Market
             updateState={async () => {
-              setNewGameState(await state(gameId));
-              game = { ...gameState };
+              if (gameId !== 0) {
+                setNewGameState(await state(gameId));
+                game = { ...gameState };
+              }
             }}
             gameId={gameId}
             stage={shownGame.stage}
@@ -278,8 +306,16 @@ const MainScreenLayout: React.FC<{
       {showEnd && (
         <Overlay
           setOpen={() => setShowEnd(false)}
-          color={Color["Success"]}
-          strokeColor={Color["Success"]}
+          color={
+            gameState.finalScore.totalScore > 60
+              ? Color["Success"]
+              : Color["Warning"]
+          }
+          strokeColor={
+            gameState.finalScore.totalScore > 60
+              ? Color["Success"]
+              : Color["Warning"]
+          }
         >
           <div>{gameState.finalScore.totalScore} / 100</div>
         </Overlay>

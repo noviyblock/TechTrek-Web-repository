@@ -17,7 +17,7 @@ function App() {
         <Route
           path="/main"
           element={
-              <MainScreenLayout game={nullGameState} sphere={0}>da</MainScreenLayout>
+              <MainScreenLayout game={nullGameState} sphere={0} gameId={0}>da</MainScreenLayout>
           }
         />
         <Route

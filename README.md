@@ -21,7 +21,7 @@
 ## Ссылки для проекта:
 [Трекер задач](https://github.com/users/noviyblock/projects/2/views/6)
 
-[Дизайн-макеты приложения в Figma](https://www.figma.com/design/Veq11r7Puwy6Lf2kzmQaBw/Tech%26Track-edit?node-id=0-1&t=H3BiEz2cwTwYHG69-1)
+[Дизайн-макеты приложения в Figma](https://www.figma.com/design/CPV1d0ibKXgQmiSWwpalaF/TeckTrek-screens?node-id=0-1&t=uQPMFZXodDGfBQog-1)
 
 [Схемы и диаграммы проекта](https://miro.com/app/board/uXjVIJDm-rA=/?share_link_id=340327924721)
 
@@ -34,6 +34,8 @@
 [Кросс-проверка и фитбек от однокурсников: 2-я аттестация](https://docs.google.com/spreadsheets/d/16xFaDXzNxKSrtZaR0VIYNgHAEtms-4v47aozlcLBHlE/edit?usp=sharing)
 
 [Схема БД](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/%D0%A1%D1%85%D0%B5%D0%BC%D0%B0%20%D0%91%D0%94.jpg)
+
+[Брендбук проекта](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/TechTrek%20brandbook.pdf)
 
 [Логгирование с помощью ELK стека](https://techtrekgame.ru/logs/)
 
@@ -80,6 +82,8 @@
 [Отчет о тестировании ко второй аттестации](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/%D0%9E%D1%82%D1%87%D1%91%D1%82%20%D0%BE%20Unit-%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B8%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0%20TechTrek%20Web%20%D0%BA%D0%BE%20%D0%B2%D1%82%D0%BE%D1%80%D0%BE%D0%B9%20%D1%80%D1%83%D0%B1%D0%B5%D0%B6%D0%BD%D0%BE%D0%B9%20%D0%B0%D1%82%D1%82%D0%B5%D1%81%D1%82%D0%B0%D1%86%D0%B8%D0%B8%2006.pdf)
 
 [Чек-лист и фитбек на 2 аттестацию](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/%D0%A7%D0%B5%D0%BA-%D0%BB%D0%B8%D1%81%D1%82%202%20%D1%8D%D1%82%D0%B0%D0%BF%20-%20%D0%9B%D0%B8%D1%81%D1%821.pdf)
+
+[Презентация на защиту](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/TechTrek%20Pre-defense.pdf)
 
 ## Видео к проекту:
 [Видеопрезентация ТЗ](https://disk.yandex.ru/d/5gtE36Z45lKDHQ)

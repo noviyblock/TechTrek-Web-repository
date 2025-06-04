@@ -53,8 +53,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
+                                "/api/auth/verify-otp",
                                 "/api/auth/status",
-                                "/actuator/prometheus").permitAll()
+                                "/actuator/prometheus",
+                                "/api/auth/guest").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

@@ -1,7 +1,3 @@
-import { Color, TextColor, deafultBackground } from "../../shared/Color";
-import { CardButtonProps } from "../../shared/Types";
-import Logo from "../../shared/banana.jpeg";
-
 const GameFieldValue: React.FC<{
   inCircle: string;
   tooltip: string | number;

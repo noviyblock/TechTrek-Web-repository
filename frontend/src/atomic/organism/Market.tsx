@@ -4,6 +4,8 @@ import MarketSelection from "../molecule/MarketSelection";
 import { sectionType } from "../molecule/SectionBuyCard";
 import { ModifierProps } from "../../shared/Types";
 import { modifiers } from "../../api/Game";
+import ColoredText from "../atom/ColoredText";
+import { Color } from "../../shared/Color";
 
 // todo stage
 const Market: React.FC<{
@@ -45,6 +47,7 @@ const Market: React.FC<{
     ),
     [sectionType.DEVELOPER]: (
       <MarketBuy
+        buyNode={<ColoredText background={"Danger"}>разработчика</ColoredText>}
         updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");
@@ -61,6 +64,11 @@ const Market: React.FC<{
     ),
     [sectionType.C_LEVEL]: (
       <MarketBuy
+        buyNode={
+          <ColoredText background={"Primary"}>
+            ключевого специалиста
+          </ColoredText>
+        }
         updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");
@@ -75,6 +83,7 @@ const Market: React.FC<{
     ),
     [sectionType.OFFICE]: (
       <MarketBuy
+        buyNode={<ColoredText background={"Warning"}>актив</ColoredText>}
         updateState={updateState}
         onClick={() => {
           setCurrentScreen("main");

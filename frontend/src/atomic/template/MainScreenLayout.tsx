@@ -1,16 +1,10 @@
-import { Color } from "../../shared/Color";
+import { Color, deafultBackground, topBackground } from "../../shared/Color";
 import Block from "../molecule/Block";
 import CommandBlock from "../organism/CommandBlock";
 import Statistics from "../organism/StatisticsBlock";
 import TimeBlock from "../organism/TimeBlock";
 import banana from "../../shared/banana.jpeg";
-import {
-  actives,
-  defaultPicture,
-  employees,
-  modificators,
-  participants,
-} from "../../shared/constants";
+import { defaultPicture } from "../../shared/constants";
 import {
   DecisionResponse,
   GameState,
@@ -21,21 +15,22 @@ import {
 } from "../../api/Game";
 import GameFieldValue from "../atom/GameFieldValue";
 import HeadedBlock from "../atom/HeadedBlock";
-import DecisionField from "../atom/DecisionField";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DiceRoller from "../organism/DiceRoller";
 import DiceResult from "../organism/DiceResult";
 import Overlay from "../molecule/Overlay";
 import { useLocalStorage } from "../../LocalStorage";
 import Market from "../organism/Market";
 import CrisisDecision from "../molecule/CrisisDecision";
-import { GameFields } from "../../api/services/GameService";
+import { GameFields, GameService } from "../../api/services/GameService";
 
 const MainScreenLayout: React.FC<{
   game: GameState;
   children: React.ReactNode;
-}> = ({ game, children }) => {
-  let prevStage = game.stage;
+  sphere: number;
+}> = ({ game, children, sphere }) => {
+  const gameId = GameService.getGameId()!;
+  let prevStage = useRef(game.stage);
   const [crisisDecision, setCrisisDecision] = useLocalStorage<string>(
     GameFields.crisisDecision,
     ""
@@ -54,6 +49,15 @@ const MainScreenLayout: React.FC<{
     GameFields.gameState,
     game
   );
+  const [shownGame, setShownGame] = useState<GameState>(game);
+
+  function setNewGameState(gameState: GameState) {
+    prevStage.current = gameState.stage;
+    console.log("prev" + prevStage);
+    setGameState(gameState);
+    console.log("current" + gameState.stage);
+  }
+
   const [crisis, setCrisis] = useLocalStorage<string>("crisis", "");
 
   const [cube1, setCube1] = useState<number>(Math.floor(Math.random() * 5 + 1));
@@ -69,25 +73,31 @@ const MainScreenLayout: React.FC<{
 
   useEffect(() => {
     const fetchGeneratedCrisis = async (gameId: number) => {
-      const result = await generateCrisis(gameId);
-      setCrisis(result.description);
+      if (gameId !== undefined) {
+        const result = await generateCrisis(gameId);
+        setCrisis(result.description);
+      }
     };
 
-    if (showMarket === false && currentStage === "emptyScreen") {
+    if (showMarket === false) {
       setCurrentStage("crisis");
-      fetchGeneratedCrisis(game.gameId);
-      
+      fetchGeneratedCrisis(gameId);
     }
   }, [showMarket]);
 
   useEffect(() => {
-    setGameState(game);
-    console.log(game.stage, prevStage);
-  }, [game]);
-
-  useEffect(() => {
     setShowMarket(currentStage === "emptyScreen");
   }, [currentStage]);
+
+  useEffect(() => {
+    if (gameId !== undefined) {
+      const wrap = async () => {
+        setShownGame(await state(gameId));
+      };
+
+      wrap();
+    }
+  }, [gameId]);
 
   const stage = {
     emptyScreen: <></>,
@@ -98,8 +108,9 @@ const MainScreenLayout: React.FC<{
           inputValue={crisisDecision}
           inputOnChange={setCrisisDecision}
           onClick={async () => {
-            setDecision(await evaluateDesicion(game.gameId, crisisDecision));
-            setGameState(await state(game.gameId));
+            setDecision(await evaluateDesicion(gameId, crisisDecision));
+            setCrisisDecision("");
+            setNewGameState(await state(gameId));
             setCurrentStage("diceRoll");
           }}
         />
@@ -113,20 +124,6 @@ const MainScreenLayout: React.FC<{
           rotation1={rotation1}
           rotation2={rotation2}
           onClick={() => {
-            //xddddddddddd
-            game.juniors = gameState.juniors;
-            game.middles = gameState.middles;
-            game.money = gameState.money;
-            game.monthsPassed = gameState.monthsPassed;
-            game.motivation = gameState.motivation;
-            game.numberOfOffices = gameState.numberOfOffices;
-            game.productReadiness = gameState.productReadiness;
-            game.stage = gameState.stage;
-            game.turnNumber = gameState.turnNumber;
-            game.technicReadiness = gameState.technicReadiness;
-            game.superEmployees = gameState.superEmployees;
-            game.seniors = gameState.seniors;
-
             let count = 0;
             const interval = setInterval(() => {
               count++;
@@ -136,7 +133,7 @@ const MainScreenLayout: React.FC<{
               setRotation1(rotation1 + Math.floor(Math.random() * 150 + 1));
               setRotation2(rotation1 + Math.floor(Math.random() * 150 + 1));
 
-              if (count == 3) {
+              if (count === 3) {
                 setCube1(decision?.roll.firstCubeRoll!);
                 setCube2(decision?.roll.secondCubeRoll!);
               }
@@ -144,6 +141,7 @@ const MainScreenLayout: React.FC<{
               if (count >= 4) {
                 clearInterval(interval);
                 setCurrentStage("diceResult");
+                setShownGame(gameState);
               }
             }, 800);
           }}
@@ -153,7 +151,7 @@ const MainScreenLayout: React.FC<{
     diceResult: (
       <div className="flex flex-col gap-8">
         <HeadedBlock header="Ваше решение">
-          {gameState.situationText}
+          {shownGame.situationText}
         </HeadedBlock>
         <DiceResult
           cube1={decision?.roll.firstCubeRoll!}
@@ -161,12 +159,11 @@ const MainScreenLayout: React.FC<{
           text="Круто!"
           diceResult={decision?.roll.diceTotal ?? 0}
           onClick={async () => {
-            if (game.stage != prevStage) {
+            if (gameState.stage !== prevStage.current) {
               setCurrentStage("presentation");
             } else {
               setCurrentStage("emptyScreen");
             }
-            prevStage = game.stage;
           }}
         />
       </div>
@@ -181,11 +178,11 @@ const MainScreenLayout: React.FC<{
           inputOnChange={setPresentationDecision}
           onClick={async () => {
             setDecision(
-              await evaluatePresentation(game.gameId, crisisDecision)
+              await evaluatePresentation(gameId, crisisDecision)
             );
-            setGameState(await state(game.gameId));
+            setNewGameState(await state(gameId));
 
-            if (game.stage === 3) {
+            if (gameState.stage === 3) {
               setShowEnd(true);
             }
 
@@ -200,27 +197,30 @@ const MainScreenLayout: React.FC<{
   return (
     <div
       className="flex flex-row gap-1 h-screen w-screen"
-      style={{ background: Color.DefaultAccent }}
+      style={{ background: deafultBackground }}
     >
       <div className="flex flex-col gap-1 basis-[20%] shrink-0 min-h-0 overflow-auto min-w-[185px]">
         <CommandBlock
           commandName={gameState.companyName}
           commandPic={banana}
-          participants={participants}
+          mission={
+            "Упростить управление личными финансами через инновационные цифровые решения"
+          }
+          sphere={sphere}
         />
         <TimeBlock
-          current={gameState.monthsPassed}
+          current={shownGame.monthsPassed}
           end={30}
           title="Время"
-          startTitle={`${gameState.monthsPassed} мес.`}
+          startTitle={`${shownGame.monthsPassed} мес.`}
           endTitle="30 мес."
         />
         <Statistics
-          techReadiness={gameState.technicReadiness}
-          productReadiness={gameState.productReadiness}
-          motivation={gameState.motivation}
+          techReadiness={shownGame.technicReadiness}
+          productReadiness={shownGame.productReadiness}
+          motivation={shownGame.motivation}
           reputation={0}
-          modificators={gameState.superEmployees.map(() => {
+          modificators={shownGame.superEmployees.map(() => {
             return { picture: defaultPicture };
           })}
           employees={[]}
@@ -236,10 +236,10 @@ const MainScreenLayout: React.FC<{
             <div className="flex flex-col gap-3 flex-none">
               <GameFieldValue
                 inCircle="$"
-                tooltip={gameState.money}
+                tooltip={shownGame.money}
               ></GameFieldValue>
               <GameFieldValue
-                inCircle={`${gameState.stage}/3`}
+                inCircle={`${shownGame.stage}/3`}
                 tooltip="Этап"
               ></GameFieldValue>
             </div>
@@ -249,8 +249,8 @@ const MainScreenLayout: React.FC<{
       {showMarket && (
         <Overlay
           setOpen={() => setShowMarket(false)}
-          color="#171719"
-          strokeColor="#171719"
+          color={topBackground}
+          strokeColor="#27262A"
         >
           {/* <div className="flex flex-col gap-4 font-inter">
             <div className="text-2xl font-extrabold">
@@ -266,11 +266,11 @@ const MainScreenLayout: React.FC<{
           </div> */}
           <Market
             updateState={async () => {
-              setGameState(await state(game.gameId));
-              game = gameState;
+              setNewGameState(await state(gameId));
+              game = { ...gameState };
             }}
-            gameId={game.gameId}
-            stage={game.stage}
+            gameId={gameId}
+            stage={shownGame.stage}
             onClick={() => setShowMarket(false)}
           ></Market>
         </Overlay>

@@ -1,8 +1,14 @@
-import axiosInstance from "./AxiosInstance";
+import axiosInstance, { safeRequest } from "./AxiosInstance";
 
 export interface Sphere {
   id: number;
   name: string;
+}
+
+export interface GeneratedMission {
+  first: string;
+  second: string;
+  third: string;
 }
 
 export interface Mission {
@@ -39,10 +45,6 @@ export interface GameState {
   situationText: string;
 
   finalScore: FinalScore;
-}
-
-interface DecisionRequest {
-  decision: string;
 }
 
 export interface DecisionResponse {
@@ -102,67 +104,65 @@ export interface CrisisResponse {
   description: string;
 }
 
-export const getSpheres = async () => {
-  return (await axiosInstance.get("/api/game/spheres")).data;
-};
+export const getSpheres = async () =>
+  safeRequest<Sphere[]>(() => axiosInstance.get("/game/spheres"));
 
 export const getMissions = async (
   sphereId: number,
   page: number = 0,
   size: number = 3
-) => {
-  return (
-    await axiosInstance.get<Mission[]>("/api/missions", {
+) =>
+  safeRequest<Mission[]>(() =>
+    axiosInstance.get<Mission[]>("/missions", {
       params: { sphereId, page, size },
     })
-  ).data;
-};
+  );
 
-export const startGame = async (req: StartGame) => {
-  return (await axiosInstance.post<GameState>("/api/game/start", req)).data;
-};
+export const generateMissions = async (sphereId: number) =>
+  safeRequest<GeneratedMission>(() =>
+    axiosInstance.post<GeneratedMission>("/generate-mission", {
+      params: { sphereId },
+    })
+  );
 
-export const evaluateDesicion = async (gameId: number, req: string) => {
-  return (
-    await axiosInstance.post<DecisionResponse>(
-      `/api/game/${gameId}/evaluate-decision`,
+export const startGame = async (req: StartGame) =>
+  safeRequest<GameState>(() =>
+    axiosInstance.post<GameState>("/game/start", req)
+  );
+
+export const evaluateDesicion = async (gameId: number, req: string) =>
+  safeRequest<DecisionResponse>(() =>
+    axiosInstance.post<DecisionResponse>(`/game/${gameId}/evaluate-decision`, {
+      decision: req,
+    })
+  );
+
+export const evaluatePresentation = async (gameId: number, req: string) =>
+  safeRequest<DecisionResponse>(() =>
+    axiosInstance.post<DecisionResponse>(
+      `/game/${gameId}/evaluate-presentation`,
       { decision: req }
     )
-  ).data;
-};
+  );
 
-export const evaluatePresentation = async (gameId: number, req: string) => {
-  return (
-    await axiosInstance.post<DecisionResponse>(
-      `/api/game/${gameId}/evaluate-presentation`,
-      { decision: req }
-    )
-  ).data;
-};
+export const state = async (gameId: number) =>
+  safeRequest<GameState>(() =>
+    axiosInstance.get<GameState>(`/game/${gameId}/state`)
+  );
 
-export const state = async (gameId: number) => {
-  return (await axiosInstance.get<GameState>(`/api/game/${gameId}/state`)).data;
-};
+export const modifiers = async (gameId: number) =>
+  safeRequest<ModifierResponse[]>(() =>
+    axiosInstance.get<ModifierResponse[]>(`/game/${gameId}/modifiers`)
+  );
 
-export const modifiers = async (gameId: number) => {
-  return (
-    await axiosInstance.get<ModifierResponse[]>(`/api/game/${gameId}/modifiers`)
-  ).data;
-};
+export const purchaseModifier = async (gameId: number, modifierId: number) =>
+  safeRequest<PurchaseResponse>(() =>
+    axiosInstance.post<PurchaseResponse>(`/game/${gameId}/modifiers`, {
+      modifierId,
+    })
+  );
 
-export const purchaseModifier = async (gameId: number, modifierId: number) => {
-  return (
-    await axiosInstance.post<PurchaseResponse>(
-      `/api/game/${gameId}/modifiers`,
-      { modifierId }
-    )
-  ).data;
-};
-
-export const generateCrisis = async (gameId: number) => {
-  return (
-    await axiosInstance.post<CrisisResponse>(
-      `/api/game/${gameId}/generate-crisis`
-    )
-  ).data;
-};
+export const generateCrisis = async (gameId: number) =>
+  safeRequest<CrisisResponse>(() =>
+    axiosInstance.post<CrisisResponse>(`/game/${gameId}/generate-crisis`)
+  );

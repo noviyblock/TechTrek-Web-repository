@@ -76,7 +76,8 @@ export interface Participant {
 export interface CommandBlockProps {
   commandName: string;
   commandPic: string;
-  participants: Participant[];
+  mission: string;
+  sphere: number;
 }
 
 export interface TimeBlockProps {

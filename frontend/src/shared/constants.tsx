@@ -87,6 +87,7 @@ export const categories: CardButtonProps[] = [
   },
 ];
 
+
 export const backendURL = "";
 
 export const choosableList: ChoosableTextProps[] = [

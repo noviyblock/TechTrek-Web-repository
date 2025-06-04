@@ -1,6 +1,5 @@
-import axiosInstance from "./AxiosInstance"
-import UserService, { User } from "./services/UserService"
+import axiosInstance, { safeRequest } from "./AxiosInstance";
+import UserService, { User } from "./services/UserService";
 
-export const getUser = async (): Promise<User> => {
-    return (await axiosInstance.get<User>("/api/user/me")).data
-}
+export const getUser = async (): Promise<User> =>
+  safeRequest(() => axiosInstance.get<User>("/user/me"));

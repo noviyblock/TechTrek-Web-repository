@@ -5,8 +5,9 @@ import CardButtonTable from "../molecule/CardButtonTable";
 import SingleElementLayoutTemplate from "../template/SingleElementLayout";
 import { CardButtonProps } from "../../shared/Types";
 
-const SphereSelectionPage: React.FC<{ onClick: (sphere: number) => void }> = ({
+const SphereSelectionPage: React.FC<{ onClick: (sphere: number) => void; onBack: () => void }> = ({
   onClick,
+  onBack
 }) => {
   const [cards, setCards] = useState<CardButtonProps[]>([]); 
   const [spheres, setSpheres] = useState<Sphere[]>([]);
@@ -36,7 +37,7 @@ const SphereSelectionPage: React.FC<{ onClick: (sphere: number) => void }> = ({
   }, [spheres]);
 
   return (
-    <SingleElementLayoutTemplate backable={true} width="66%" minWidth="950px">
+    <SingleElementLayoutTemplate backable={true} onBack={onBack} width="66%" minWidth="950px">
       <div className="flex flex-col px-20 p-8 gap-4 ">
         <div className="text-white font-inter text-center">
           Выберите сферу в которой вы бы хотели запустить стартап:

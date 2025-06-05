@@ -85,6 +85,8 @@
 
 [Презентация на защиту](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/TechTrek%20Pre-defense.pdf)
 
+[Курсовая работа](https://github.com/noviyblock/TechTrek-Web-repository/blob/main/%D0%9A%D1%83%D1%80%D1%81%D0%BE%D0%B2%D0%B0%D1%8F_%D0%A2%D0%9F_4.1.%D1%81%D0%BF%D0%B5%D1%86.pdf)
+
 ## Видео к проекту:
 [Видеопрезентация ТЗ](https://disk.yandex.ru/d/5gtE36Z45lKDHQ)
 

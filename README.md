@@ -43,7 +43,7 @@
 
  Логин            | Пароль         |
 ------------------|----------------|
-| `elastic`  | `12345678` |
+| `elastic`  | `0M7uEhwp9fBgcLUzydVM` |
 
 [Техническая документация](https://techtrekgame.ru/docs/)
 

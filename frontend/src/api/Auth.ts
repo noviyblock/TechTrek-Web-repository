@@ -51,13 +51,9 @@ export const refresh = () => {
 
 export const register = async (userRegister: UserRegister) => {
   try {
-    const response = await axios.post<AuthResponse>(
-      "/auth/register",
-      userRegister
-    );
-    TokenService.setTokens(response.data);
-    UserService.setUsername(response.data.username);
-    return response.status
+    const response = await axios.post("/auth/register", userRegister);
+    UserService.setTemp("");
+    return response.status;
   } catch (error) {
     console.error(error);
     // todo handle error
@@ -66,34 +62,31 @@ export const register = async (userRegister: UserRegister) => {
 
 export const login = async (userLogin: UserLogin) => {
   try {
-    const response = await axios.post<AuthResponse>(
-      "/auth/login",
-      userLogin
-    );
+    const response = await axios.post<AuthResponse>("/auth/login", userLogin);
     TokenService.setTokens(response.data);
     UserService.setUsername(response.data.username);
+    UserService.setTemp("");
     return response.status;
   } catch (error) {
     //todo handle error
   }
 };
 
-export const guest = async() => {
+export const guest = async () => {
   try {
-    const response = await axios.post<AuthResponse>(
-      "/auth/guest"
-    );
+    const response = await axios.post<AuthResponse>("/auth/guest");
     TokenService.setTokens(response.data);
     UserService.setUsername(response.data.username);
+    UserService.setTemp("temp");
     return response.status;
-  } catch (error) {
-  }
-}
+  } catch (error) {}
+};
 
 export const status = async (): Promise<boolean> => {
   try {
     return (
-      (await axiosInstance.get("/auth/status")).status === 200 && UserService.getUsername() !== "undefined"
+      (await axiosInstance.get("/auth/status")).status === 200 &&
+      UserService.getUsername() !== "undefined"
     );
   } catch (error) {
     console.error(error);
@@ -101,4 +94,14 @@ export const status = async (): Promise<boolean> => {
   }
 };
 
-export const verify_otp = async ({email, otp}: OtpRequest) => safeRequest<string>(() => axiosInstance.post("/verify-otp", {email, otp}));
+export const verify_otp = async ({ email, otp }: OtpRequest) => {
+  try {
+    const response = await axios.post<AuthResponse>("/auth/verify-otp", {
+      email,
+      otp,
+    });
+    TokenService.setTokens(response.data);
+    UserService.setTemp("");
+    return response.status;
+  } catch (error) {}
+};

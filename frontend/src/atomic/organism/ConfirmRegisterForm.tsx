@@ -15,8 +15,9 @@ const ConfirmRegister: React.FC<{ width: string; email: string }> = ({
   async function registerOnClick(e: React.FormEvent<HTMLFormElement>) {
     try {
       e.preventDefault();
-      await verify_otp({ email, otp });
-      navigate("/profile")
+      const status = await verify_otp({ email, otp });
+      if (status && status >= 200 && status < 300) 
+        navigate("/profile")
     } catch (error) {
       console.error(error);
     }

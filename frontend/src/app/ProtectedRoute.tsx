@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { status } from "../api/Auth";
 import React, { useEffect, useState } from "react";
 import { deafultBackground } from "../shared/Color";
+import UserService from "../api/services/UserService";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -30,7 +31,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <div style={{background: deafultBackground}}></div>;
   }
 
-  if (!isAuthenticated && location.pathname.indexOf("game") == -1) {
+  if (!isAuthenticated && location.pathname.indexOf("game") == -1 && UserService.getTemp() === "temp") {
     navigate("/login");
   }
 

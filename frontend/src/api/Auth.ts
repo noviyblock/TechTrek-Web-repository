@@ -57,6 +57,7 @@ export const register = async (userRegister: UserRegister) => {
     );
     TokenService.setTokens(response.data);
     UserService.setUsername(response.data.username);
+    UserService.setTemp("");
     return response.status
   } catch (error) {
     console.error(error);
@@ -72,6 +73,7 @@ export const login = async (userLogin: UserLogin) => {
     );
     TokenService.setTokens(response.data);
     UserService.setUsername(response.data.username);
+    UserService.setTemp("");
     return response.status;
   } catch (error) {
     //todo handle error
@@ -85,6 +87,7 @@ export const guest = async() => {
     );
     TokenService.setTokens(response.data);
     UserService.setUsername(response.data.username);
+    UserService.setTemp("temp");
     return response.status;
   } catch (error) {
   }
@@ -101,4 +104,4 @@ export const status = async (): Promise<boolean> => {
   }
 };
 
-export const verify_otp = async ({email, otp}: OtpRequest) => safeRequest<string>(() => axiosInstance.post("/verify-otp", {email, otp}));
+export const verify_otp = async ({email, otp}: OtpRequest) => safeRequest<string>(() => axiosInstance.post("/api/verify-otp", {email, otp}));
